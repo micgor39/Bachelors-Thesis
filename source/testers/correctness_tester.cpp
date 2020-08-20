@@ -2,7 +2,7 @@
 
 const bool debug = false;
 
-const int ALPHABET_SIZE                 = 26;
+const int ALPHABET_SIZE                 = 20;
 const int RANDOM_NUMBER_OF_TEST_CASES   = 1000;
 const int RANDOM_NUMBER_OF_OPERATIONS   = 10000;
 const int RANDOM_MAX_WORD_LENGTH        = 10000;
@@ -16,11 +16,11 @@ correctness_tester::correctness_tester(int seed) {
     random_number_generator.seed(seed);
 }
 
-std::string correctness_tester::random_word(int max_length) {
+std::vector<int> correctness_tester::random_word(int max_length) {
     int length = random_integer(1, max_length);
-    std::string word;
+    std::vector<int> word;
     for(int i = 0; i < length; i++) {
-        word.push_back('a' + random_integer(0, ALPHABET_SIZE - 1));
+        word.push_back(random_integer(0, ALPHABET_SIZE - 1));
     }
     return word;
 }
@@ -31,16 +31,23 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
     int query_type = 1, passed_tests = 0, total_tests = 0;
     for(int i = 0; i < number_of_operations; i++) {
         if(query_type == 1) {
-            std::string word = random_word(RANDOM_WORD_LENGTH); 
+            std::vector<int> word = random_word(RANDOM_WORD_LENGTH); 
             model_labels.push_back(model->make_string(word));
             tested_labels.push_back(tested->make_string(word));
             word_lengths.push_back(word.size());
-            if(debug) std::cerr << "update " << model_labels.size() - 1 << " " << word << "\n";
+            if(debug) {
+                std::cerr << "update " << model_labels.size() - 1 << ": ";
+                for(auto character: word) {
+                    std::cerr << character << " ";
+                }
+                std::cerr << "\n";
+            }
         } else if(query_type == 2) {
             int index1 = random_integer(0, model_labels.size() - 1),
                 index2 = random_integer(0, model_labels.size() - 1);
             if(word_lengths[index1] + word_lengths[index2] > RANDOM_MAX_WORD_LENGTH) {
                 i--;
+                query_type = random_integer(1, 6);
                 continue;
             }
             model_labels.push_back(
@@ -58,8 +65,13 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
             word_lengths.push_back(word_lengths[index1] + word_lengths[index2]);
             if(debug) std::cerr << "concat " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
         } else if(query_type == 3) {
-            int index = random_integer(0, model_labels.size() - 1),
-                position = random_integer(0, word_lengths[index]);
+            int index = random_integer(0, model_labels.size() - 1);
+            if(word_lengths[index] < 2) {
+                i--;
+                query_type = random_integer(1, 6);
+                continue;
+            }
+            int position = random_integer(1, word_lengths[index] - 1);
             auto model_output = model->split(model_labels[index], position);
             model_labels.push_back(model_output.first);
             model_labels.push_back(model_output.second);
@@ -140,7 +152,7 @@ void correctness_tester::run_tests() {
     for(int test_case = 0; test_case < RANDOM_NUMBER_OF_TEST_CASES; test_case++) {
         std::pair<int, int> naive_random_test = generate_random_operations(
             new naive(),
-            new balanced_trees(53172, 43, 1e9 + 7, 'a'),
+            new balanced_trees(53172, 43, 1e9 + 7),
             RANDOM_NUMBER_OF_OPERATIONS
         );
         total_passed += naive_random_test.first;

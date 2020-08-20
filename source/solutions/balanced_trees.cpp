@@ -20,7 +20,7 @@ void balanced_trees::update_values(balanced_trees::treap* t) {
     t->size = get_size(t->left_subtree) + get_size(t->right_subtree) + 1;
     t->hash = (get_hash(t->left_subtree) 
             + (long long)get_base_power(t->left_subtree)
-            * (t->character - smallest_character)
+            * t->character
             + (long long)get_base_power(t->left_subtree) * base % modulo
             * (long long)get_hash(t->right_subtree)) % modulo;
     t->base_power = (long long)get_base_power(t->left_subtree)
@@ -31,13 +31,13 @@ void balanced_trees::update_values(balanced_trees::treap* t) {
                             t->character;
 }
 
-balanced_trees::treap* balanced_trees::create(char character) {
+balanced_trees::treap* balanced_trees::create(int character) {
     return new treap {
         random_long_long(),
         character,
         character,
         1,
-        character - smallest_character,
+        character,
         base,
         nullptr,
         nullptr
@@ -92,7 +92,7 @@ void balanced_trees::print_treap(balanced_trees::treap* t) {
     print_treap(t->right_subtree);
 }
 
-balanced_trees::treap* balanced_trees::create(std::string &word) {
+balanced_trees::treap* balanced_trees::create(std::vector<int> &word) {
     std::vector<treap*> current_level;
     for(auto character: word) {
         current_level.push_back(create(character));
@@ -110,14 +110,13 @@ balanced_trees::treap* balanced_trees::create(std::string &word) {
     return current_level[0];
 }
 
-balanced_trees::balanced_trees(int seed, int _base, int _modulo, char _smallest_character) {
+balanced_trees::balanced_trees(int seed, int _base, int _modulo) {
     random_number_generator.seed(seed);
     base = _base;
     modulo = _modulo;
-    smallest_character = _smallest_character;
 }
 
-int balanced_trees::make_string(std::string &word) {
+int balanced_trees::make_string(std::vector<int> &word) {
     stream.push_back(create(word));
     return stream.size() - 1;
 }

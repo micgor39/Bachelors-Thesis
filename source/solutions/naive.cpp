@@ -1,18 +1,20 @@
 #include "naive.h"
 
-int naive::make_string(std::string &word) {
+int naive::make_string(std::vector<int> &word) {
     stream.push_back(word);
     return stream.size() - 1;
 }
 
 int naive::concat(int label1, int label2) {
-    stream.push_back(stream[label1] + stream[label2]);
+    auto concatenation = stream[label1];
+    concatenation.insert(concatenation.end(), stream[label2].begin(), stream[label2].end());
+    stream.push_back(concatenation);
     return stream.size() - 1;
 }
 
 std::pair<int, int> naive::split(int label, int position) {
-    stream.push_back(stream[label].substr(0, position));
-    stream.push_back(stream[label].substr(position));
+    stream.push_back(std::vector<int>(stream[label].begin(), stream[label].begin() + position));
+    stream.push_back(std::vector<int>(stream[label].begin() + position, stream[label].end()));
     return {stream.size() - 2, stream.size() - 1};
 }
 

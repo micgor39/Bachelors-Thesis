@@ -8,7 +8,7 @@ class correctness_tester {
     private:
         std::mt19937 random_number_generator;
         int random_integer(int lower_limit, int upper_limit);
-        std::string random_word(int max_length);
+        std::vector<int> random_word(int max_length);
         std::pair<int, int> generate_random_operations(solution *model, solution *tested, int number_of_test_cases);
     public:
         correctness_tester(int seed);
