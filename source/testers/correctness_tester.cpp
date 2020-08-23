@@ -1,6 +1,6 @@
 #include "correctness_tester.h"
 
-const bool debug = false;
+bool debug = true;
 
 const int ALPHABET_SIZE                 = 20;
 const int RANDOM_NUMBER_OF_TEST_CASES   = 1000;
@@ -31,17 +31,17 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
     int query_type = 1, passed_tests = 0, total_tests = 0;
     for(int i = 0; i < number_of_operations; i++) {
         if(query_type == 1) {
-            std::vector<int> word = random_word(RANDOM_WORD_LENGTH); 
-            model_labels.push_back(model->make_string(word));
-            tested_labels.push_back(tested->make_string(word));
-            word_lengths.push_back(word.size());
+            std::vector<int> word = random_word(RANDOM_WORD_LENGTH);
             if(debug) {
-                std::cerr << "update " << model_labels.size() - 1 << ": ";
+                std::cerr << "update " << (int)model_labels.size() - 1 << ": ";
                 for(auto character: word) {
                     std::cerr << character << " ";
                 }
                 std::cerr << "\n";
-            }
+            } 
+            model_labels.push_back(model->make_string(word));
+            tested_labels.push_back(tested->make_string(word));
+            word_lengths.push_back(word.size());
         } else if(query_type == 2) {
             int index1 = random_integer(0, model_labels.size() - 1),
                 index2 = random_integer(0, model_labels.size() - 1);
@@ -50,6 +50,7 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
                 query_type = random_integer(1, 6);
                 continue;
             }
+            if(debug) std::cerr << "concat " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
             model_labels.push_back(
                 model->concat(
                     model_labels[index1],
@@ -63,7 +64,6 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
                 )
             );
             word_lengths.push_back(word_lengths[index1] + word_lengths[index2]);
-            if(debug) std::cerr << "concat " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
         } else if(query_type == 3) {
             int index = random_integer(0, model_labels.size() - 1);
             if(word_lengths[index] < 2) {
@@ -72,6 +72,7 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
                 continue;
             }
             int position = random_integer(1, word_lengths[index] - 1);
+            if(debug) std::cerr << "split " << model_labels.size() - 1 << " " << index << " " << position << " " << word_lengths[index] << "\n";
             auto model_output = model->split(model_labels[index], position);
             model_labels.push_back(model_output.first);
             model_labels.push_back(model_output.second);
@@ -80,10 +81,10 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
             tested_labels.push_back(tested_output.second);
             word_lengths.push_back(position);
             word_lengths.push_back(word_lengths[index] - position);
-            if(debug) std::cerr << "split " << model_labels.size() - 1 << " " << index << "\n";
         } else if(query_type == 4) {
             int index1 = random_integer(0, model_labels.size() - 1),
                 index2 = random_integer(0, model_labels.size() - 1);
+            if(debug) std::cerr << "equals " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
             bool model_output = model->equals(
                 model_labels[index1], 
                 model_labels[index2]
@@ -92,7 +93,6 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
                 tested_labels[index1], 
                 tested_labels[index2]
             );
-            if(debug) std::cerr << "equals " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
             if(model_output == tested_output) {
                 passed_tests++;
             } else if(debug) {
@@ -103,6 +103,7 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
         } else if(query_type == 5) {
             int index1 = random_integer(0, model_labels.size() - 1),
                 index2 = random_integer(0, model_labels.size() - 1);
+            if(debug) std::cerr << "smaller " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
             bool model_output = model->smaller(
                 model_labels[index1], 
                 model_labels[index2]
@@ -111,7 +112,6 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
                 tested_labels[index1], 
                 tested_labels[index2]
             );
-            if(debug) std::cerr << "smaller " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
             if(model_output == tested_output) {
                 passed_tests++;
             } else if(debug) {
@@ -122,6 +122,7 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
         } else {
             int index1 = random_integer(0, model_labels.size() - 1),
                 index2 = random_integer(0, model_labels.size() - 1);
+            if(debug) std::cerr << "lcp " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
             int model_output = model->longest_common_prefix(
                 model_labels[index1], 
                 model_labels[index2]
@@ -130,7 +131,6 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
                 tested_labels[index1], 
                 tested_labels[index2]
             );
-            if(debug) std::cerr << "lcp " << model_labels.size() - 1 << " " << index1 << " " << index2 << "\n";
             if(model_output == tested_output) {
                 passed_tests++;
             } else if(debug) {
@@ -145,18 +145,39 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
 }
 
 void correctness_tester::run_tests() {
+    // std::cout << "RUNNING RANDOM TESTS\n";
+    // std::cout << "----------------------------------------\n";
+    // std::cout << "RUNNING BALANCED TREES SOLUTION\n";
+    // int total_passed = 0, total_tests = 0;
+    // for(int test_case = 0; test_case < RANDOM_NUMBER_OF_TEST_CASES; test_case++) {
+    //     std::pair<int, int> naive_random_test = generate_random_operations(
+    //         new naive(),
+    //         new balanced_trees(53172, 43, 1e9 + 7),
+    //         RANDOM_NUMBER_OF_OPERATIONS
+    //     );
+    //     total_passed += naive_random_test.first;
+    //     total_tests += naive_random_test.second;
+    // }
+    // std::cout << "PASSED " << total_passed << " OUT OF " << total_tests 
+    //           << " TESTS (" << 100.0 * total_passed / total_tests << "%)\n";
+
     std::cout << "RUNNING RANDOM TESTS\n";
     std::cout << "----------------------------------------\n";
-    std::cout << "RUNNING BALANCED TREES SOLUTION\n";
+    std::cout << "RUNNING PARSING TREES SOLUTION\n";
     int total_passed = 0, total_tests = 0;
     for(int test_case = 0; test_case < RANDOM_NUMBER_OF_TEST_CASES; test_case++) {
+        debug = test_case == 195;
         std::pair<int, int> naive_random_test = generate_random_operations(
             new naive(),
-            new balanced_trees(53172, 43, 1e9 + 7),
+            new parsings(1998, test_case == 195),
             RANDOM_NUMBER_OF_OPERATIONS
         );
         total_passed += naive_random_test.first;
         total_tests += naive_random_test.second;
+        if(naive_random_test.first == 0) {
+            std::cerr << test_case << "\n";
+            return;
+        }
     }
     std::cout << "PASSED " << total_passed << " OUT OF " << total_tests 
               << " TESTS (" << 100.0 * total_passed / total_tests << "%)\n";

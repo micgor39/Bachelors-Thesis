@@ -1,5 +1,6 @@
 #include "solution.h"
 #include <vector>
+#include <assert.h>
 
 class naive: public solution {
     private:

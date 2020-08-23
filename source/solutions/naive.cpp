@@ -13,6 +13,7 @@ int naive::concat(int label1, int label2) {
 }
 
 std::pair<int, int> naive::split(int label, int position) {
+    assert(1 <= position && position < stream[label].size());
     stream.push_back(std::vector<int>(stream[label].begin(), stream[label].begin() + position));
     stream.push_back(std::vector<int>(stream[label].begin() + position, stream[label].end()));
     return {stream.size() - 2, stream.size() - 1};

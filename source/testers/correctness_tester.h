@@ -1,5 +1,6 @@
 #include "../solutions/naive.h"
 #include "../solutions/balanced_trees.h"
+#include "../solutions/parsings.h"
 #include <iostream>
 #include <vector>
 #include <random>
