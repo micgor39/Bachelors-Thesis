@@ -1,9 +1,9 @@
 #include "correctness_tester.h"
 
-bool debug = true;
+const bool debug = false;
 
 const int ALPHABET_SIZE                 = 20;
-const int RANDOM_NUMBER_OF_TEST_CASES   = 1000;
+const int RANDOM_NUMBER_OF_TEST_CASES   = 100;
 const int RANDOM_NUMBER_OF_OPERATIONS   = 10000;
 const int RANDOM_MAX_WORD_LENGTH        = 10000;
 const int RANDOM_WORD_LENGTH            = 10;
@@ -145,31 +145,14 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
 }
 
 void correctness_tester::run_tests() {
-    // std::cout << "RUNNING RANDOM TESTS\n";
-    // std::cout << "----------------------------------------\n";
-    // std::cout << "RUNNING BALANCED TREES SOLUTION\n";
-    // int total_passed = 0, total_tests = 0;
-    // for(int test_case = 0; test_case < RANDOM_NUMBER_OF_TEST_CASES; test_case++) {
-    //     std::pair<int, int> naive_random_test = generate_random_operations(
-    //         new naive(),
-    //         new balanced_trees(53172, 43, 1e9 + 7),
-    //         RANDOM_NUMBER_OF_OPERATIONS
-    //     );
-    //     total_passed += naive_random_test.first;
-    //     total_tests += naive_random_test.second;
-    // }
-    // std::cout << "PASSED " << total_passed << " OUT OF " << total_tests 
-    //           << " TESTS (" << 100.0 * total_passed / total_tests << "%)\n";
-
     std::cout << "RUNNING RANDOM TESTS\n";
     std::cout << "----------------------------------------\n";
-    std::cout << "RUNNING PARSING TREES SOLUTION\n";
-    int total_passed = 0, total_tests = 0;
+    std::cout << "RUNNING BALANCED TREES SOLUTION\n";
+    int total_passed = 0, total_tests = 0, percent_done = 0;
     for(int test_case = 0; test_case < RANDOM_NUMBER_OF_TEST_CASES; test_case++) {
-        debug = test_case == 195;
         std::pair<int, int> naive_random_test = generate_random_operations(
             new naive(),
-            new parsings(1998, test_case == 195),
+            new balanced_trees(53172, 43, 1e9 + 7),
             RANDOM_NUMBER_OF_OPERATIONS
         );
         total_passed += naive_random_test.first;
@@ -177,6 +160,74 @@ void correctness_tester::run_tests() {
         if(naive_random_test.first == 0) {
             std::cerr << test_case << "\n";
             return;
+        }
+        if(100 * (test_case + 1) / RANDOM_NUMBER_OF_TEST_CASES > percent_done) {
+            percent_done = 100 * (test_case + 1) / RANDOM_NUMBER_OF_TEST_CASES;
+            std::cout << "[";
+            for(int i = 0; i < 100; i++) {
+                std::cout << (i < percent_done ? "*" : " ");
+            }
+            std::cout << "] " << percent_done << "%" << (percent_done < 100 ? "\r" : "\n");
+            std::cout.flush();
+        }
+    }
+    std::cout << "PASSED " << total_passed << " OUT OF " << total_tests 
+              << " TESTS (" << 100.0 * total_passed / total_tests << "%)\n";
+
+
+    std::cout << "RUNNING RANDOM TESTS\n";
+    std::cout << "----------------------------------------\n";
+    std::cout << "RUNNING PARSING TREES LCP LOG^2 SOLUTION\n";
+    total_passed = 0, total_tests = 0, percent_done = 0;
+    for(int test_case = 0; test_case < RANDOM_NUMBER_OF_TEST_CASES; test_case++) {
+        std::pair<int, int> naive_random_test = generate_random_operations(
+            new naive(),
+            new parsings_slow_lcp(1998, false),
+            RANDOM_NUMBER_OF_OPERATIONS
+        );
+        total_passed += naive_random_test.first;
+        total_tests += naive_random_test.second;
+        if(naive_random_test.first == 0) {
+            std::cerr << test_case << "\n";
+            return;
+        }
+        if(100 * (test_case + 1) / RANDOM_NUMBER_OF_TEST_CASES > percent_done) {
+            percent_done = 100 * (test_case + 1) / RANDOM_NUMBER_OF_TEST_CASES;
+            std::cout << "[";
+            for(int i = 0; i < 100; i++) {
+                std::cout << (i < percent_done ? "*" : " ");
+            }
+            std::cout << "] " << percent_done << "%" << (percent_done < 100 ? "\r" : "\n");
+            std::cout.flush();
+        }
+    }
+    std::cout << "PASSED " << total_passed << " OUT OF " << total_tests 
+              << " TESTS (" << 100.0 * total_passed / total_tests << "%)\n";
+
+    std::cout << "RUNNING RANDOM TESTS\n";
+    std::cout << "----------------------------------------\n";
+    std::cout << "RUNNING PARSING TREES LCP LOG SOLUTION\n";
+    total_passed = 0, total_tests = 0, percent_done = 0;
+    for(int test_case = 0; test_case < RANDOM_NUMBER_OF_TEST_CASES; test_case++) {
+        std::pair<int, int> naive_random_test = generate_random_operations(
+            new naive(),
+            new parsings(1998, false),
+            RANDOM_NUMBER_OF_OPERATIONS
+        );
+        total_passed += naive_random_test.first;
+        total_tests += naive_random_test.second;
+        if(naive_random_test.first == 0) {
+            std::cerr << test_case << "\n";
+            return;
+        }
+        if(100 * (test_case + 1) / RANDOM_NUMBER_OF_TEST_CASES > percent_done) {
+            percent_done = 100 * (test_case + 1) / RANDOM_NUMBER_OF_TEST_CASES;
+            std::cout << "[";
+            for(int i = 0; i < 100; i++) {
+                std::cout << (i < percent_done ? "*" : " ");
+            }
+            std::cout << "] " << percent_done << "%" << (percent_done < 100 ? "\r" : "\n");
+            std::cout.flush();
         }
     }
     std::cout << "PASSED " << total_passed << " OUT OF " << total_tests 

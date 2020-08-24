@@ -1,3 +1,5 @@
+#ifndef __PARSINGS_H_INCLUDED__
+#define __PARSINGS_H_INCLUDED__
 #include "solution.h"
 #include <vector>
 #include <unordered_map>
@@ -21,6 +23,7 @@ class parsings: public solution {
         std::unordered_map<int, bool> random_bit;
         std::map<std::pair<int, int>, int> inverse_rle_rules;
         std::map<std::pair<int, int>, int> inverse_shrink_rules;
+    protected:
         bool get_random_bit(int symbol);
         int get_length(int symbol);
         int get_level(int symbol);
@@ -42,3 +45,4 @@ class parsings: public solution {
         bool smaller(int label1, int label2);
         int longest_common_prefix(int label1, int label2);
 };
+#endif

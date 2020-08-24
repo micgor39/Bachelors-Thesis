@@ -79,7 +79,7 @@ int parsings::get_shrink_symbol(int left_symbol, int right_symbol) {
 }
 
 int parsings::get_kth_character(int symbol, int k) {
-    assert(k <= get_length(symbol));
+    assert(1 <= k && k <= get_length(symbol));
     if(get_level(symbol) == 0) {
         return -symbol - 2;
     } else if(get_level(symbol) % 2 == 0) {
@@ -132,6 +132,7 @@ std::vector<std::pair<int, int>> parsings::context_insensitive_decomposition(int
     get_path_to_kth_leaf(symbol, from, left_path, 0, true, 0);
     get_path_to_kth_leaf(symbol, to, right_path, 0, false, 0);
     // std::cerr << "from = " << from << " to = " << to << "\n";
+    // int expected_length = get_length(symbol);
     std::vector<std::pair<int, int>> left_decomposition, right_decomposition;
     while(std::get<1>(left_path.back()) < std::get<1>(right_path.back()) && std::get<1>(left_path[left_path.size() - 2]) < std::get<1>(right_path[right_path.size() - 2])) {
         // left decomposition
@@ -233,32 +234,37 @@ std::vector<std::pair<int, int>> parsings::context_insensitive_decomposition(int
         }
     }
 
-    if(debug) {
-        std::cerr << "begin left path\n";
-        for(auto x: left_path) {
-            std::cerr << std::get<0>(x) << " " << std::get<1>(x) << " " << std::get<2>(x) << "\n";
-        }
-        std::cerr << "end left path\n";
+    // bool wrong = false;
+    // if(std::get<1>(left_path.back()) > std::get<1>(right_path.back()) && left_decomposition.back().first == right_decomposition.back().first) {
+    //     wrong = get_level(left_decomposition.back().first) % 2 == 1;
+    // }
 
-        std::cerr << "begin right path\n";
-        for(auto x: right_path) {
-            std::cerr << std::get<0>(x) << " " << std::get<1>(x) << " " << std::get<2>(x) << "\n";
-        }
-        std::cerr << "end right path\n";
+    // if(debug || wrong) {
+    //     std::cerr << "begin left path\n";
+    //     for(auto x: left_path) {
+    //         std::cerr << std::get<0>(x) << " " << std::get<1>(x) << " " << std::get<2>(x) << "\n";
+    //     }
+    //     std::cerr << "end left path\n";
+
+    //     std::cerr << "begin right path\n";
+    //     for(auto x: right_path) {
+    //         std::cerr << std::get<0>(x) << " " << std::get<1>(x) << " " << std::get<2>(x) << "\n";
+    //     }
+    //     std::cerr << "end right path\n";
         
-        std::cerr << "begin left internal decomposition\n";
-        for(auto x: left_decomposition) {
-            std::cerr << x.first << " " << x.second << "\n";
-        }
-        std::cerr << "end left decomposition\n";
-        std::cerr << "begin right internal decomposition\n";
-        for(auto x: right_decomposition) {
-            std::cerr << x.first << " " << x.second << " " << "\n";
-        }
-        std::cerr << "end right decomposition\n";
+    //     std::cerr << "begin left internal decomposition\n";
+    //     for(auto x: left_decomposition) {
+    //         std::cerr << x.first << " " << x.second << "\n";
+    //     }
+    //     std::cerr << "end left decomposition\n";
+    //     std::cerr << "begin right internal decomposition\n";
+    //     for(auto x: right_decomposition) {
+    //         std::cerr << x.first << " " << x.second << " " << "\n";
+    //     }
+    //     std::cerr << "end right decomposition\n";
 
-        std::cerr << "jestem tutaj2 " << std::get<1>(right_path.back()) << " " <<  std::get<1>(left_path.back()) << " " << get_length(std::get<0>(left_path.back())) << "\n";
-    }
+    //     std::cerr << "jestem tutaj2 " << std::get<1>(right_path.back()) << " " <<  std::get<1>(left_path.back()) << " " << get_length(std::get<0>(left_path.back())) << "\n";
+    // }
 
     if(std::get<1>(left_path.back()) < std::get<1>(right_path.back())) {
         if(std::get<0>(left_path.back()) == std::get<0>(right_path.back())) {
@@ -274,19 +280,37 @@ std::vector<std::pair<int, int>> parsings::context_insensitive_decomposition(int
         left_decomposition.back().second += right_decomposition.back().second;
         right_decomposition.pop_back();
         assert(get_level(left_decomposition.back().first) % 2 == 0);
+        // wrong = get_level(left_decomposition.back().first) % 2 == 1;
     }
     while(!right_decomposition.empty()) {
         left_decomposition.push_back(right_decomposition.back());
         right_decomposition.pop_back();
     }
 
-    if(debug) {
-        std::cerr << "begin decomposition\n";
-        for(auto x: left_decomposition) {
-            std::cerr << x.first << " " << x.second << " " << "\n";
-        }
-        std::cerr << "end decomposition\n";
-    }
+    // int result_length = 0;
+    // for(auto x: left_decomposition) {
+    //     result_length += get_length(x.first) * x.second;
+    // }
+    // if(wrong) {
+    //     std::cerr << "rule: " << rules[11].first << " " << rules[11].second << "\n";
+    //     std::cerr << "s" << 1 << ": " << get_kth_character(symbol, 1) << "\n";
+    //     std::cerr << "s" << 2 << ": " << get_kth_character(symbol, 2) << "\n";
+    //     std::cerr << "s" << 3 << ": " << get_kth_character(symbol, 3) << "\n";
+    //     std::cerr << "s" << 4 << ": " << get_kth_character(symbol, 4) << "\n";
+    //     std::cerr << expected_length << " " << result_length << "\n";
+    // }
+    // assert(result_length == expected_length);
+
+
+    // if(debug || wrong) {
+    //     std::cerr << "begin decomposition\n";
+    //     for(auto x: left_decomposition) {
+    //         std::cerr << x.first << " " << x.second << " " << get_level(x.first) << "\n";
+    //     }
+    //     std::cerr << "end decomposition\n";
+    // }
+
+    // assert(!wrong);
 
     return left_decomposition;
 }
@@ -305,7 +329,7 @@ int parsings::find_representant(std::vector<std::pair<int, int>> decomposition) 
     }
     size_t i = 0;
     while(!(i + 1 == levels.size() && levels[i].size() == 1 && std::get<1>(levels[i][0]) == 1)) {
-        if(i > 300) break;
+        // if(i > 300) break;
         std::vector<std::tuple<int, int, int>> next_level;
         size_t index = 0;
         
@@ -318,7 +342,7 @@ int parsings::find_representant(std::vector<std::pair<int, int>> decomposition) 
             }
             if(i % 2 == 0) {
                 if(j + 1 < levels[i].size() 
-                && std::get<2>(levels[i][j]) + get_length(std::get<0>(levels[i][j])) == std::get<2>(levels[i][j + 1]) 
+                && std::get<2>(levels[i][j]) + get_length(std::get<0>(levels[i][j])) * std::get<1>(levels[i][j]) == std::get<2>(levels[i][j + 1]) 
                 && std::get<0>(levels[i][j]) == std::get<0>(levels[i][j + 1])) {
                     levels[i][j + 1] = {
                         std::get<0>(levels[i][j + 1]),
@@ -364,18 +388,18 @@ int parsings::find_representant(std::vector<std::pair<int, int>> decomposition) 
         i++;
     }
 
-    if(i > 300) {
-        for(auto x: decomposition) {
-            std::cerr << x.first << " " << x.second << " " << get_length(x.first) << " " << get_level(x.first) << "\n";
-        }
-        for(int jj = 0; jj < i + 1; jj++) {
-            std::cerr << "level " << jj << "\n";
-            for(size_t j = 0; j < levels[jj].size(); j++) {
-                std::cerr << jj << " " << j << " " << std::get<0>(levels[jj][j]) << " " << std::get<1>(levels[jj][j]) << " " << std::get<2>(levels[jj][j]) << " length " << get_length(std::get<0>(levels[jj][j])) << "\n";
-            }
-        }
-        assert(false);
-    }
+    // if(i > 300) {
+    //     for(auto x: decomposition) {
+    //         std::cerr << x.first << " " << x.second << " " << get_length(x.first) << " " << get_level(x.first) << "\n";
+    //     }
+    //     for(int jj = 0; jj < i + 1; jj++) {
+    //         std::cerr << "level " << jj << "\n";
+    //         for(size_t j = 0; j < levels[jj].size(); j++) {
+    //             std::cerr << jj << " " << j << " " << std::get<0>(levels[jj][j]) << " " << std::get<1>(levels[jj][j]) << " " << std::get<2>(levels[jj][j]) << " length " << get_length(std::get<0>(levels[jj][j])) << "\n";
+    //         }
+    //     }
+    //     assert(false);
+    // }
 
     return std::get<0>(levels[i][0]);
 }
@@ -450,21 +474,20 @@ bool parsings::equals(int label1, int label2) {
 }
 
 int parsings::longest_common_prefix(int label1, int label2) {
-    // todo: change
-    int max_possible_lcp = std::min(get_length(label1), get_length(label2));
-    // binary search the answer
-    int left_pointer = 0, right_pointer = max_possible_lcp + 1;
-    while(left_pointer + 1 < right_pointer) {
-        int guess = (left_pointer + right_pointer) / 2;
-        auto s1 = context_insensitive_decomposition(label1, 1, guess);
-        auto s2 = context_insensitive_decomposition(label2, 1, guess);
-        if(s1 == s2) {
-            left_pointer = guess;
-        } else {
-            right_pointer = guess;
-        }
-    }
-    return left_pointer;
+    // int max_possible_lcp = std::min(get_length(label1), get_length(label2));
+    // int left_pointer = 0, right_pointer = max_possible_lcp + 1;
+    // while(left_pointer + 1 < right_pointer) {
+    //     int guess = (left_pointer + right_pointer) / 2;
+    //     auto s1 = context_insensitive_decomposition(label1, 1, guess);
+    //     auto s2 = context_insensitive_decomposition(label2, 1, guess);
+    //     if(s1 == s2) {
+    //         left_pointer = guess;
+    //     } else {
+    //         right_pointer = guess;
+    //     }
+    // }
+    // return left_pointer;
+    return 0;
 }
 
 bool parsings::smaller(int label1, int label2) {
