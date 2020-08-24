@@ -1,5 +1,10 @@
 #include "balanced_trees.h"
 
+balanced_trees::treap::~treap() {
+    delete left_subtree;
+    delete right_subtree;
+}
+
 long long balanced_trees::random_long_long() {
     return std::uniform_int_distribution<long long>()(random_number_generator);
 }
@@ -114,6 +119,11 @@ balanced_trees::balanced_trees(int seed, int _base, int _modulo) {
     random_number_generator.seed(seed);
     base = _base;
     modulo = _modulo;
+}
+
+balanced_trees::~balanced_trees() {
+    stream.clear();
+    stream.shrink_to_fit();
 }
 
 int balanced_trees::make_string(std::vector<int> &word) {

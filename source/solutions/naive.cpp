@@ -1,5 +1,10 @@
 #include "naive.h"
 
+naive::~naive() {
+    stream.clear();
+    stream.shrink_to_fit();
+}
+
 int naive::make_string(std::vector<int> &word) {
     stream.push_back(word);
     return stream.size() - 1;

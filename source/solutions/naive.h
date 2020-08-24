@@ -6,6 +6,7 @@ class naive: public solution {
     private:
         std::vector<std::vector<int>> stream;
     public:
+        ~naive();
         int make_string(std::vector<int> &word);
         int concat(int label1, int label2);
         std::pair<int, int> split(int label, int position);

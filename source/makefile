@@ -1,8 +1,11 @@
 CXX=g++
 CXXFLAGS=-std=c++17 -O2 -Wall -Wshadow -Wextra
 
-run: naive.o balanced_trees.o parsings.o parsings_slow_lcp.o correctness_tester.o
-	$(CXX) $(CXXFLAGS) run.cpp naive.o balanced_trees.o correctness_tester.o parsings.o parsings_slow_lcp.o -o run
+run: solution.o naive.o balanced_trees.o parsings.o parsings_slow_lcp.o correctness_tester.o
+	$(CXX) $(CXXFLAGS) run.cpp solution.o naive.o balanced_trees.o correctness_tester.o parsings.o parsings_slow_lcp.o -o run
+
+solution.o:
+	$(CXX) $(CXXFLAGS) -c solutions/solution.cpp
 
 naive.o:
 	$(CXX) $(CXXFLAGS) -c solutions/naive.cpp

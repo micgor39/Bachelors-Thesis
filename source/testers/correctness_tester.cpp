@@ -2,8 +2,8 @@
 
 const bool debug = false;
 
-const int ALPHABET_SIZE                 = 20;
-const int RANDOM_NUMBER_OF_TEST_CASES   = 100;
+const int ALPHABET_SIZE                 = 2;
+const int RANDOM_NUMBER_OF_TEST_CASES   = 1000;
 const int RANDOM_NUMBER_OF_OPERATIONS   = 10000;
 const int RANDOM_MAX_WORD_LENGTH        = 10000;
 const int RANDOM_WORD_LENGTH            = 10;
@@ -141,14 +141,18 @@ std::pair<int, int> correctness_tester::generate_random_operations(solution *mod
         }
         query_type = random_integer(1, 6);
     }
+    delete model;
+    delete tested;
     return {passed_tests, total_tests};
 }
 
 void correctness_tester::run_tests() {
+    int total_passed, total_tests, percent_done;
+    
     std::cout << "RUNNING RANDOM TESTS\n";
     std::cout << "----------------------------------------\n";
     std::cout << "RUNNING BALANCED TREES SOLUTION\n";
-    int total_passed = 0, total_tests = 0, percent_done = 0;
+    total_passed = 0, total_tests = 0, percent_done = 0;
     for(int test_case = 0; test_case < RANDOM_NUMBER_OF_TEST_CASES; test_case++) {
         std::pair<int, int> naive_random_test = generate_random_operations(
             new naive(),

@@ -7,22 +7,31 @@
 #include <random>
 #include <assert.h>
 
-#include <map>
 #include <iostream>
 
 class parsings: public solution {
     private:
+        struct own_pair_hash {
+            size_t operator() (const std::pair<int,int> &pair) const;
+        };
+        struct symbol_info {
+            std::pair<int, int> rule;
+            int level;
+            int length;
+            bool rle;
+            std::unordered_map<int, int> inverse_rules;
+        };
         bool debug;
         std::mt19937_64 random_number_generator;
         int symbols_counter = 0;
-        std::unordered_map<int, std::vector<int>> grammar;
-        std::vector<std::pair<int, int>> rules;
-        std::vector<int> level;
-        std::vector<int> length;
-        std::vector<bool> rle;
+        std::vector<symbol_info> grammar;
+        // std::vector<std::pair<int, int>> rules;
+        // std::vector<int> level;
+        // std::vector<int> length;
+        // std::vector<bool> rle;
         std::unordered_map<int, bool> random_bit;
-        std::map<std::pair<int, int>, int> inverse_rle_rules;
-        std::map<std::pair<int, int>, int> inverse_shrink_rules;
+        // std::vector<std::unordered_map<int, int>> inverse_rules;
+        std::unordered_map<std::pair<int, int>, int, own_pair_hash> level0_inverse_rules;
     protected:
         bool get_random_bit(int symbol);
         int get_length(int symbol);
@@ -38,6 +47,7 @@ class parsings: public solution {
         int find_representant(std::vector<std::pair<int, int>> decomposition);
     public:
         parsings(int seed, bool _debug);
+        ~parsings();
         int make_string(std::vector<int> &word);
         int concat(int label1, int label2);
         std::pair<int, int> split(int label, int position);

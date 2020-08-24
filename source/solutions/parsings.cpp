@@ -1,4 +1,8 @@
 #include "parsings.h"
+            
+size_t parsings::own_pair_hash::operator() (const std::pair<int,int> &pair) const {
+    return std::hash<int>{}(pair.first) ^ std::hash<int>{}(pair.second);
+}
 
 bool parsings::get_random_bit(int symbol) {
     auto iterator = random_bit.find(symbol);
@@ -12,7 +16,7 @@ bool parsings::get_random_bit(int symbol) {
 
 int parsings::get_length(int symbol) {
     if(symbol >= 0) {
-        return length[symbol];
+        return grammar[symbol].length;
     } else if (symbol == -1) {
         return 0;
     } else {
@@ -23,7 +27,7 @@ int parsings::get_length(int symbol) {
 int parsings::get_level(int symbol) {
     assert(symbol != -1);
     if(symbol >= 0) {
-        return level[symbol];
+        return grammar[symbol].level;
     } else {
         return 0;
     }
@@ -32,7 +36,7 @@ int parsings::get_level(int symbol) {
 bool parsings::is_rle(int symbol) {
     assert(symbol != -1);
     if(symbol >= 0) {
-        return rle[symbol];
+        return grammar[symbol].rle;
     } else {
         return false;
     }
@@ -40,37 +44,68 @@ bool parsings::is_rle(int symbol) {
 
 int parsings::create_new_rle_symbol(int symbol, int quantity) {
     int index = symbols_counter++;
-    rules.push_back({symbol, quantity});
-    inverse_rle_rules[{symbol, quantity}] = index;
-    level.push_back(get_level(symbol) + 1);
-    length.push_back(get_length(symbol) * quantity);
-    rle.push_back(true);
+    // rules.push_back({symbol, quantity});
+    if(symbol < 0) {
+        level0_inverse_rules[{symbol, quantity}] = index;
+    } else {
+        grammar[symbol].inverse_rules[quantity] = index;
+    }
+    grammar.push_back({
+        std::make_pair(symbol, quantity),
+        get_level(symbol) + 1,
+        get_length(symbol) * quantity,
+        true,
+        {}
+    });
+    // level.push_back(get_level(symbol) + 1);
+    // length.push_back(get_length(symbol) * quantity);
+    // rle.push_back(true);
+    // inverse_rules.push_back({});
     return index;
 }
 
 int parsings::create_new_shrink_symbol(int left_symbol, int right_symbol) {
     int index = symbols_counter++;
-    rules.push_back({left_symbol, right_symbol});
-    inverse_shrink_rules[{left_symbol, right_symbol}] = index;
-    level.push_back(get_level(left_symbol) + 1);
-    length.push_back(get_length(left_symbol) + get_length(right_symbol));
-    rle.push_back(false);
+    // rules.push_back({left_symbol, right_symbol});
+    grammar[left_symbol].inverse_rules[right_symbol] = index;
+    grammar.push_back({
+        std::make_pair(left_symbol, right_symbol),
+        get_level(left_symbol) + 1,
+        get_length(left_symbol) + get_length(right_symbol),
+        false,
+        {}
+    });
+    // level.push_back(get_level(left_symbol) + 1);
+    // length.push_back(get_length(left_symbol) + get_length(right_symbol));
+    // rle.push_back(false);
+    // inverse_rules.push_back({});
     return index;
 }
 
 int parsings::get_rle_symbol(int symbol, int quantity) {
-    auto iterator = inverse_rle_rules.find({symbol, quantity});
-    if(iterator == inverse_rle_rules.end()) {
+    if(symbol < 0) {
+        auto iterator = level0_inverse_rules.find({symbol, quantity});
+        if(iterator == level0_inverse_rules.end()) {
         int new_symbol = create_new_rle_symbol(symbol, quantity);
-        return new_symbol;
+            return new_symbol;
+        } else {
+            return iterator->second;
+        }
     } else {
-        return iterator->second;
+        auto iterator = grammar[symbol].inverse_rules.find(quantity);
+        if(iterator == grammar[symbol].inverse_rules.end()) {
+            int new_symbol = create_new_rle_symbol(symbol, quantity);
+            return new_symbol;
+        } else {
+            return iterator->second;
+        }
     }
 }
 
 int parsings::get_shrink_symbol(int left_symbol, int right_symbol) {
-    auto iterator = inverse_shrink_rules.find({left_symbol, right_symbol});
-    if(iterator == inverse_shrink_rules.end()) {
+    assert(left_symbol >= 0);
+    auto iterator = grammar[left_symbol].inverse_rules.find(right_symbol);
+    if(iterator == grammar[left_symbol].inverse_rules.end()) {
         int new_symbol = create_new_shrink_symbol(left_symbol, right_symbol);
         return new_symbol;
     } else {
@@ -83,15 +118,15 @@ int parsings::get_kth_character(int symbol, int k) {
     if(get_level(symbol) == 0) {
         return -symbol - 2;
     } else if(get_level(symbol) % 2 == 0) {
-        int left_symbol = rules[symbol].first,
-            right_symbol = rules[symbol].second;
+        int left_symbol = grammar[symbol].rule.first,
+            right_symbol = grammar[symbol].rule.second;
         if(k <= get_length(left_symbol)) {
             return get_kth_character(left_symbol, k);
         } else {
             return get_kth_character(right_symbol, k - get_length(left_symbol));
         }
     } else {
-        int child_symbol = rules[symbol].first;
+        int child_symbol = grammar[symbol].rule.first;
         return get_kth_character(child_symbol, (k - 1) % get_length(child_symbol) + 1);
     }
 }
@@ -102,8 +137,8 @@ void parsings::get_path_to_kth_leaf(int symbol, int k, std::vector<std::tuple<in
     if(get_level(symbol) == 0) {
         return;
     } else if(get_level(symbol) % 2 == 0) {
-        int left_symbol = rules[symbol].first,
-            right_symbol = rules[symbol].second;
+        int left_symbol = grammar[symbol].rule.first,
+            right_symbol = grammar[symbol].rule.second;
             assert(get_length(left_symbol) + get_length(right_symbol) == get_length(symbol));
         if(k <= get_length(left_symbol)) {
             if(right_symbol != -1 && left) {
@@ -119,7 +154,7 @@ void parsings::get_path_to_kth_leaf(int symbol, int k, std::vector<std::tuple<in
             }
         }
     } else {
-        int child_symbol = rules[symbol].first, children = rules[symbol].second;
+        int child_symbol = grammar[symbol].rule.first, children = grammar[symbol].rule.second;
         int new_siblings = left ?
                            children - (k - 1) / get_length(child_symbol) :
                            (k - 1) / get_length(child_symbol) + 1;
@@ -160,8 +195,8 @@ std::vector<std::pair<int, int>> parsings::context_insensitive_decomposition(int
                 });
             } else {
                 left_path.push_back({
-                    rules[parent_symbol].second,
-                    std::get<1>(parent) + get_length(rules[parent_symbol].first),
+                    grammar[parent_symbol].rule.second,
+                    std::get<1>(parent) + get_length(grammar[parent_symbol].rule.first),
                     1
                 });
             }
@@ -170,15 +205,15 @@ std::vector<std::pair<int, int>> parsings::context_insensitive_decomposition(int
                 last_symbol = std::get<0>(last);
                 if(is_rle(last_symbol)) {
                     left_path.push_back({
-                        rules[last_symbol].first,
+                        grammar[last_symbol].rule.first,
                         std::get<1>(last),
-                        rules[last_symbol].second
+                        grammar[last_symbol].rule.second
                     });
                 } else {
                     left_path.push_back({
-                        rules[last_symbol].first,
+                        grammar[last_symbol].rule.first,
                         std::get<1>(last),
-                        rules[last_symbol].second == -1 ? 1 : -1
+                        grammar[last_symbol].rule.second == -1 ? 1 : -1
                     });
                 }
             }
@@ -209,7 +244,7 @@ std::vector<std::pair<int, int>> parsings::context_insensitive_decomposition(int
                 });
             } else {
                 right_path.push_back({
-                    rules[parent_symbol].first,
+                    grammar[parent_symbol].rule.first,
                     std::get<1>(parent),
                     1
                 });
@@ -219,15 +254,21 @@ std::vector<std::pair<int, int>> parsings::context_insensitive_decomposition(int
                 last_symbol = std::get<0>(last);
                 if(is_rle(last_symbol)) {
                     right_path.push_back({
-                        rules[last_symbol].first,
-                        std::get<1>(last) + get_length(rules[last_symbol].first) * (rules[last_symbol].second - 1),
-                        rules[last_symbol].second
+                        grammar[last_symbol].rule.first,
+                        std::get<1>(last) + get_length(grammar[last_symbol].rule.first) * (grammar[last_symbol].rule.second - 1),
+                        grammar[last_symbol].rule.second
+                    });
+                } else if (grammar[last_symbol].rule.second == -1) {
+                    right_path.push_back({
+                        grammar[last_symbol].rule.first,
+                        std::get<1>(last),
+                        1
                     });
                 } else {
                     right_path.push_back({
-                        (rules[last_symbol].second == -1 ? rules[last_symbol].first : rules[last_symbol].second),
-                        (rules[last_symbol].second == -1 ? std::get<1>(last) : std::get<1>(last) + get_length(rules[last_symbol].first)),
-                        (rules[last_symbol].second == -1 ? 1 : -1)
+                        grammar[last_symbol].rule.second,
+                        std::get<1>(last) + get_length(grammar[last_symbol].rule.first),
+                        -1
                     });
                 }
             }
@@ -409,6 +450,13 @@ parsings::parsings(int seed, bool _debug) {
     random_number_generator.seed(seed);
 }
 
+parsings::~parsings() {
+    grammar.clear();
+    grammar.shrink_to_fit();
+    random_bit.clear();
+    level0_inverse_rules.clear();
+}
+
 int parsings::make_string(std::vector<int> &word) {
     std::vector<std::pair<int, int>> decomposition(word.size());
     for(size_t i = 0; i < word.size(); i++) {
@@ -474,19 +522,9 @@ bool parsings::equals(int label1, int label2) {
 }
 
 int parsings::longest_common_prefix(int label1, int label2) {
-    // int max_possible_lcp = std::min(get_length(label1), get_length(label2));
-    // int left_pointer = 0, right_pointer = max_possible_lcp + 1;
-    // while(left_pointer + 1 < right_pointer) {
-    //     int guess = (left_pointer + right_pointer) / 2;
-    //     auto s1 = context_insensitive_decomposition(label1, 1, guess);
-    //     auto s2 = context_insensitive_decomposition(label2, 1, guess);
-    //     if(s1 == s2) {
-    //         left_pointer = guess;
-    //     } else {
-    //         right_pointer = guess;
-    //     }
-    // }
-    // return left_pointer;
+    while(get_level(label1) > get_level(label2)) {
+           
+    }
     return 0;
 }
 

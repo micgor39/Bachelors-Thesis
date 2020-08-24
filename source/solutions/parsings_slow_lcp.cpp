@@ -1,5 +1,7 @@
 #include "parsings_slow_lcp.h"
 
+parsings_slow_lcp::~parsings_slow_lcp() {}
+
 int parsings_slow_lcp::longest_common_prefix(int label1, int label2) {
     int max_possible_lcp = std::min(get_length(label1), get_length(label2));
     // binary search the answer

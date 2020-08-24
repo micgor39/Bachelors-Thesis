@@ -14,6 +14,7 @@ class balanced_trees: public solution {
             int base_power;
             treap* left_subtree;
             treap* right_subtree;
+            ~treap();
         };
         int base, modulo;
         std::mt19937_64 random_number_generator;
@@ -30,6 +31,7 @@ class balanced_trees: public solution {
         void print_treap(treap* t);
     public:
         balanced_trees(int seed, int _base, int _modulo);
+        ~balanced_trees();
         int make_string(std::vector<int> &word);
         int concat(int label1, int label2);
         std::pair<int, int> split(int label, int position);
