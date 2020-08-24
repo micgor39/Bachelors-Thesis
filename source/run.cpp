@@ -2,8 +2,9 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
-    if(argc != 2) {
-        std::cerr << "usage: ./run seed" << "\n";
+    if (argc != 2) {
+        std::cerr << "usage: ./run seed"
+                  << "\n";
         return 1;
     }
     int seed = atoi(argv[1]);
