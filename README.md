@@ -4,3 +4,6 @@
 * `make run` - compile the whole project,
 * `./run seed` - run the project,
 * `make clean` - delete auxiliary compilation files.
+
+## Compiling PDF:
+* `pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper`
