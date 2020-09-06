@@ -1,3 +1,5 @@
+#ifndef __NAIVE_H_INCLUDED__
+#define __NAIVE_H_INCLUDED__
 #include "solution.h"
 #include <assert.h>
 #include <vector>
@@ -15,3 +17,5 @@ class naive : public solution {
     bool smaller(int label1, int label2);
     int longest_common_prefix(int label1, int label2);
 };
+
+#endif

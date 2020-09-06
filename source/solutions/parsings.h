@@ -56,4 +56,5 @@ class parsings : public solution {
     bool smaller(int label1, int label2);
     int longest_common_prefix(int label1, int label2);
 };
+
 #endif

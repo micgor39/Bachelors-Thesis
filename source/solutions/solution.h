@@ -12,4 +12,5 @@ class solution {
     virtual bool smaller(int label1, int label2) = 0;
     virtual int longest_common_prefix(int label1, int label2) = 0;
 };
+
 #endif

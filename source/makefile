@@ -1,8 +1,8 @@
 CXX=g++
 CXXFLAGS=-std=c++17 -O2 -Wall -Wshadow -Wextra
 
-run: solution.o naive.o balanced_trees.o parsings.o parsings_slow_lcp.o correctness_tester.o
-	$(CXX) $(CXXFLAGS) run.cpp solution.o naive.o balanced_trees.o correctness_tester.o parsings.o parsings_slow_lcp.o -o run
+run: solution.o naive.o balanced_trees.o parsings.o parsings_slow_lcp.o correctness_tester.o speed_tester.o
+	$(CXX) $(CXXFLAGS) run.cpp solution.o naive.o balanced_trees.o correctness_tester.o speed_tester.o parsings.o parsings_slow_lcp.o -o run
 
 solution.o:
 	$(CXX) $(CXXFLAGS) -c solutions/solution.cpp
@@ -21,6 +21,9 @@ parsings_slow_lcp.o:
 
 correctness_tester.o:
 	$(CXX) $(CXXFLAGS) -c testers/correctness_tester.cpp
+
+speed_tester.o:
+	$(CXX) $(CXXFLAGS) -c testers/speed_tester.cpp
 
 clean:
 	rm -f *.o run

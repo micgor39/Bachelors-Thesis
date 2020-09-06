@@ -1,7 +1,12 @@
+#ifndef __BALANCED_TREES_H_INCLUDED__
+#define __BALANCED_TREES_H_INCLUDED__
 #include "solution.h"
+#include <assert.h>
 #include <iostream>
 #include <random>
 #include <vector>
+
+const int MAX_PERMISSIBLE_OBJECTS = 100 * 1000 * 1000;
 
 class balanced_trees : public solution {
   private:
@@ -14,11 +19,16 @@ class balanced_trees : public solution {
         int base_power;
         treap *left_subtree;
         treap *right_subtree;
-        ~treap();
     };
-    int base, modulo;
+    int base, modulo, treap_factory_index;
     std::mt19937_64 random_number_generator;
     std::vector<treap *> stream;
+    treap *treap_factory;
+    treap *get_fresh_treap(treap *t);
+    treap *get_fresh_treap(long long priority, int character,
+                           int leftmost_character, int size, int hash,
+                           int base_power, treap *left_subtree,
+                           treap *right_subtree);
     long long random_long_long();
     int get_size(treap *t);
     int get_hash(treap *t);
@@ -40,3 +50,5 @@ class balanced_trees : public solution {
     bool smaller(int label1, int label2);
     int longest_common_prefix(int label1, int label2);
 };
+
+#endif

@@ -1,8 +1,33 @@
 #include "balanced_trees.h"
 
-balanced_trees::treap::~treap() {
-    delete left_subtree;
-    delete right_subtree;
+balanced_trees::treap *
+balanced_trees::get_fresh_treap(balanced_trees::treap *t) {
+    assert(treap_factory_index < MAX_PERMISSIBLE_OBJECTS);
+    treap_factory[treap_factory_index].size = t->size;
+    treap_factory[treap_factory_index].base_power = t->base_power;
+    treap_factory[treap_factory_index].character = t->character;
+    treap_factory[treap_factory_index].hash = t->hash;
+    treap_factory[treap_factory_index].left_subtree = t->left_subtree;
+    treap_factory[treap_factory_index].leftmost_character =
+        t->leftmost_character;
+    treap_factory[treap_factory_index].priority = t->priority;
+    treap_factory[treap_factory_index].right_subtree = t->right_subtree;
+    return &treap_factory[treap_factory_index++];
+}
+
+balanced_trees::treap *balanced_trees::get_fresh_treap(
+    long long priority, int character, int leftmost_character, int size,
+    int hash, int base_power, treap *left_subtree, treap *right_subtree) {
+    assert(treap_factory_index < MAX_PERMISSIBLE_OBJECTS);
+    treap_factory[treap_factory_index].size = size;
+    treap_factory[treap_factory_index].base_power = base_power;
+    treap_factory[treap_factory_index].character = character;
+    treap_factory[treap_factory_index].hash = hash;
+    treap_factory[treap_factory_index].left_subtree = left_subtree;
+    treap_factory[treap_factory_index].leftmost_character = leftmost_character;
+    treap_factory[treap_factory_index].priority = priority;
+    treap_factory[treap_factory_index].right_subtree = right_subtree;
+    return &treap_factory[treap_factory_index++];
 }
 
 long long balanced_trees::random_long_long() {
@@ -36,8 +61,8 @@ void balanced_trees::update_values(balanced_trees::treap *t) {
 }
 
 balanced_trees::treap *balanced_trees::create(int character) {
-    return new treap{random_long_long(), character, character, 1,
-                     character,          base,      nullptr,   nullptr};
+    return get_fresh_treap(random_long_long(), character, character, 1,
+                           character, base, nullptr, nullptr);
 }
 
 balanced_trees::treap *balanced_trees::merge(balanced_trees::treap *t1,
@@ -49,12 +74,14 @@ balanced_trees::treap *balanced_trees::merge(balanced_trees::treap *t1,
         return t1;
     }
     if (t1->priority > t2->priority) {
-        auto return_treap = new treap(*t1);
+        // auto return_treap = new treap(*t1);
+        auto return_treap = get_fresh_treap(t1);
         return_treap->right_subtree = merge(t1->right_subtree, t2);
         update_values(return_treap);
         return return_treap;
     } else {
-        auto return_treap = new treap(*t2);
+        // auto return_treap = new treap(*t2);
+        auto return_treap = get_fresh_treap(t2);
         return_treap->left_subtree = merge(t1, t2->left_subtree);
         update_values(return_treap);
         return return_treap;
@@ -68,14 +95,16 @@ balanced_trees::split(balanced_trees::treap *t, int left_tree_size) {
     }
     if (left_tree_size <= get_size(t->left_subtree)) {
         auto left_subtree_split = split(t->left_subtree, left_tree_size);
-        auto return_treap = new treap(*t);
+        // auto return_treap = new treap(*t);
+        auto return_treap = get_fresh_treap(t);
         return_treap->left_subtree = left_subtree_split.second;
         update_values(return_treap);
         return {left_subtree_split.first, return_treap};
     } else {
         auto right_subtree_split = split(
             t->right_subtree, left_tree_size - 1 - get_size(t->left_subtree));
-        auto return_treap = new treap(*t);
+        // auto return_treap = new treap(*t);
+        auto return_treap = get_fresh_treap(t);
         return_treap->right_subtree = right_subtree_split.first;
         update_values(return_treap);
         return {return_treap, right_subtree_split.second};
@@ -106,18 +135,24 @@ balanced_trees::treap *balanced_trees::create(std::vector<int> &word) {
         }
         current_level = next_level;
     }
-    return current_level[0];
+    treap *ret = current_level[0];
+    return ret;
 }
 
 balanced_trees::balanced_trees(int seed, int _base, int _modulo) {
     random_number_generator.seed(seed);
     base = _base;
     modulo = _modulo;
+    treap_factory_index = 0;
+    treap_factory = new treap[MAX_PERMISSIBLE_OBJECTS];
 }
 
 balanced_trees::~balanced_trees() {
     stream.clear();
     stream.shrink_to_fit();
+    // treap_factory.clear();
+    // treap_factory.shrink_to_fit();
+    delete[] treap_factory;
 }
 
 int balanced_trees::make_string(std::vector<int> &word) {
