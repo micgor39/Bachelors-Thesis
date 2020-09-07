@@ -346,7 +346,7 @@ Zastosujmy zatem procedurę \texttt{split} na~drzewcu $L$ wraz z~parametrem $k$.
 
 Za każdym razem gdy przepinamy wskaźniki aktualizujemy wartości trzymane w~wierzchołku. Tymi wartościami są: rozmiar poddrzewa, skrajny lewy znak w~poddrzewie oraz hasz wyliczany dla słowa $s = s_1 s_2 \ldots s_n$, liczby $p > \max \{ z\ |\ z~\in \Sigma \}$ i~dużej liczby pierwszej $M$ w~następujący sposób $$\mathcal{H}(s) = (\sum_{i=1}^n p^{i-1} \cdot s_i) \text{ mod } M.$$ Trzymamy też w~wierzchołku wartość $p^{\text{rozmiar poddrzewa}} \text{ mod } M$. Wiemy, że jeśli lewe poddrzewo ma rozmiar $k$, to~reprezentuje słowo $s_{\ldots k}$, a~prawe poddrzewo słowo $s_{(k + 2) \ldots}$. Zatem możemy wylicz hasz w~następujący sposób $$ \mathcal{H}(s) = (\mathcal{H}(s_{\ldots k}) + p^k \cdot s_{k+1} + p^{k+1} \cdot \mathcal{H}(s_{(k+2) \ldots})) \text{ mod } M,$$ a wzór ten możemy wyliczyć szybko między innymi dzięki temu, że $p^k$ mod $M$ jest trzymane w wierzchołku lewego dziecka naszego wierzchołka.
 
-Należy tutaj zaznaczyć kilka rzeczy. Po pierwsze chcemy, aby liczba $M$ była duża, ale żeby mieściła się w słowie maszynowym oraz najlepiej aby $M^2$ również się mieściło, dlatego że czasem chcemy wyliczyć $ab \text{ mod } M$ dla pewnych $a, b \in \{0, 1, \ldots, M - 1\}$. Ponadto zauważmy, że jeśli dla ustalonego alfabetu $\Sigma = \{0, 1, \ldots, |\Sigma| - 1\}$, przyjmiemy $p = |\Sigma|$ to dla każdej długości słowa $d \in \mathbb{N}$ funkcja haszująca $\mathcal{H}$ obcięta do dziedziny będącej $\Sigma^d$ oraz pozbawiona operacji brania reszty z dzielenia przez $M$ będzie bijekcją pomiędzy $\Sigma^d$ oraz zbiorem $\{0, 1, \ldots, |\Sigma|^d - 1\}$. Wobec tego, prawdopodobieństwo że dwa losowe słowa $w_1, w_2$ ustalonej długości $d$ będą w kolizji, tzn. $\mathcal{H}(w_1) = \mathcal{H}(w_2)$, będzie nie większe niż $\frac{1}{M}$, bo jest to dokładnie prawdopodobieństwo, że dwie losowe liczby ze zbioru $\{0, 1, \ldots, |\Sigma|^d - 1\}$ mają taką samą resztę z dzielenia przez $M$.
+Należy tutaj zaznaczyć kilka rzeczy. Po pierwsze chcemy, aby liczba $M$ była duża, ale żeby mieściła się w słowie maszynowym oraz najlepiej aby $M^2$ również się mieściło, dlatego że czasem chcemy wyliczyć $ab \text{ mod } M$ dla pewnych $a, b \in \{0, 1, \ldots, M - 1\}$. Wartość $p$ będzie losowana jednostajnie ze zbioru $\{1, 2, \ldots, M - 1\}$. O haszach pewnych dwóch słów $w, u$ jednakowej długości $d$ możemy myśleć jak o wartościach w punkcie $p$ wielomianów $W(x) = \sum_{i=1}^d w_i x^{i-1}$ oraz $U(x) = \sum_{i=1}^d u_i x^{i-1}$ liczonych w ciele $\mathbb{Z}_M$. Z lematu Schwartza–Zippela \cite{schwartz} mamy, że wybierając $p$ losowo, prawdopodobieństwo że $W(p) = U(p)$ lub równoważnie, aby bezpośrednio zastosować tezę lematu $W(p) - U(p) = 0$ ($\deg(W - U) \leq d$) jest nie większe niż $\frac{d}{M}$.
 
 \subsection{Dygresja -- utrwalanie struktur danych}
 
@@ -412,7 +412,7 @@ Zauważmy, że otrzymując symbol (terminalny lub nie) w~takiej gramatyce i~znaj
 
 Aby to~podejście miało szansę działać lepiej niż podejście z~drzewami zbalansowanymi musimy zastosować jakiegoś rodzaju sztuczkę, która pozwoli ograniczyć wysokość drzew symboli. W tym przypadku, podobnie jak w~przypadku drzewców, skorzystamy z~losowości.
 
-W tym miejscu warto zaznaczyć, że cały pomysł na~drzewa parsingów pochodzi z~pracy \cite{gawrychowski}, umieszczonej w~bibliografii. Zaimplementowane przeze mnie rozwiązanie zawiera wiele uproszczeń względem skomplikowanej struktury opisanej w~tej pracy. Będę zamieszczał informację w~miejscach, gdzie moje rozwiązanie i~implementacja różni się od oryginalnej struktury.
+W tym miejscu warto zaznaczyć, że cały pomysł na~drzewa parsingów pochodzi z~pracy Gawrychowski et al.~\cite{gawrychowski}, umieszczonej w~bibliografii. Zaimplementowane przeze mnie rozwiązanie zawiera wiele uproszczeń względem skomplikowanej struktury opisanej w~tej pracy. Będę zamieszczał informację w~miejscach, gdzie moje rozwiązanie i~implementacja różni się od oryginalnej struktury.
 
 W rozwiązaniu przeze mnie implementowanym, wymagam od gramatyki dodatkowego warunku. Każdy symbol będzie miał dobrze zdefiniowany \textit{poziom}, który oznacza odległość w~sensie liczby produkcji od symbolu terminalnego. Aby było to~dobrze definiowane, odległość od każdego symbolu terminalnego musi być taka sama. Przyjmuję, że symbole terminalne mają poziom równy $0$. Ta zasada sprawi, że w~opisywanej gramatyce będą musiały się pojawić produkcje jednoelementowe i~zakłócą one zasadę o~tym, że każde słowo może być reprezentowane tylko przez jeden symbol. Jednak musimy pamiętać o~tym, że struktura ujawnia użytkownikowi wykonującemu na~niej operacje tylko niektóre symbole z~gramatyki. Zapewnimy zatem, aby dla ustalonego słowa struktura zwracała zawsze ten sam symbol, tak naprawdę będzie to~symbol indukujący to~słowo o~najmniejszym poziomie, a~taki jest już tylko jeden.
 
@@ -484,7 +484,7 @@ W oryginalnej pracy w~procesie kompresji nie są dozwolone produkcje jednoelemen
     Opisany powyżej proces kompresji działa w~oczekiwanym czasie $\mathcal{O}(n)$, gdzie $n$ jest długością słowa, nad którym budujemy drzewo symbolu.
 \end{theorem}
 
-Zacznijmy od udowodnienia pomocniczego lematu. Skorzystamy w~nim z~faktu 3.2 z~pracy \cite{gawrychowski}, zapiszemy jego lekko zmodyfikowaną wersję w~postaci poniższej obserwacji.
+Zacznijmy od udowodnienia pomocniczego lematu. Skorzystamy w~nim z~faktu 3.2 z~pracy Gawrychowski et al.~\cite{gawrychowski}, zapiszemy jego lekko zmodyfikowaną wersję w~postaci poniższej obserwacji.
 \begin{remark}
     Po zastosowaniu kompresji typu RLE, a~następnie kompresji typu shrink na~dowolnym słowie $w$, oczekiwana długość słowa $w^\prime$ powstałego w~wyniku kompresji jest nie większa niż $\frac{3}{4}|w| + \frac{1}{4}$.
 \end{remark}
@@ -508,7 +508,7 @@ Na koniec zauważmy, że w~analogiczny sposób możemy tworzyć drzewo symbolu m
 
 \subsection{Dekompozycja context-insensitive}
 
-Wyobraźmy sobie drzewo symbolu dla pewnego słowa. Weźmy pewne jego podsłowo. Nie zawsze będzie tak, że możemy wykroić pewne poddrzewo z~drzewa symboli, które będzie drzewem symbolu dla wybranego podsłowa. Powodem tej sytuacji jest możliwość kompresji z~symbolami spoza analizowanego podsłowa. Spójrzmy na~przykład z~rysunku 3.4.1 i~na $(2, 5)$-podsłowo ($abba$). Nie potrafimy wykroić jednego poddrzewa tak, aby reprezentowało ono dokładnie to~podsłowo. Wprowadźmy zatem pojęcie wierzchołka typu \textit{context-insensitive} w~ustalonym drzewie symbolu. Jest to~taki wierzchołek, że niezależnie od tego czy po~lewej lub prawej stronie początkowego słowa dopiszemy dowolne znaki, on zawsze powstanie w~procesie kompresji. Możemy też zdefiniować wierzchołki typu \textit{left context-insensitive} oraz \textit{right context-insensitive}, tak jak poprzednio, ale pozwalamy na~dopisywanie liter tylko z~lewej (prawej) strony. Zauważmy, że wszystkie wierzchołki na~poziomie $0$ są typu context-insensitive. W pracy \cite{gawrychowski} zostało udowodnione, że:
+Wyobraźmy sobie drzewo symbolu dla pewnego słowa. Weźmy pewne jego podsłowo. Nie zawsze będzie tak, że możemy wykroić pewne poddrzewo z~drzewa symboli, które będzie drzewem symbolu dla wybranego podsłowa. Powodem tej sytuacji jest możliwość kompresji z~symbolami spoza analizowanego podsłowa. Spójrzmy na~przykład z~rysunku 3.4.1 i~na $(2, 5)$-podsłowo ($abba$). Nie potrafimy wykroić jednego poddrzewa tak, aby reprezentowało ono dokładnie to~podsłowo. Wprowadźmy zatem pojęcie wierzchołka typu \textit{context-insensitive} w~ustalonym drzewie symbolu. Jest to~taki wierzchołek, że niezależnie od tego czy po~lewej lub prawej stronie początkowego słowa dopiszemy dowolne znaki, on zawsze powstanie w~procesie kompresji. Możemy też zdefiniować wierzchołki typu \textit{left context-insensitive} oraz \textit{right context-insensitive}, tak jak poprzednio, ale pozwalamy na~dopisywanie liter tylko z~lewej (prawej) strony. Zauważmy, że wszystkie wierzchołki na~poziomie $0$ są typu context-insensitive. W pracy Gawrychowski et al.~\cite{gawrychowski} zostało udowodnione, że:
 \begin{itemize}
     \item jeśli $v$ jest typu left context-insensitive, to~prawy brat jego ojca również jest wierzchołkiem tego typu,
     \item jeśli $v$ jest typu right context-insensitive, to~lewy brat jego ojca również jest wierzchołkiem tego typu,
@@ -574,7 +574,7 @@ Połączenie poprzednich własności skutkuje algorytmem tworzącym \textit{deko
     \end{center}
 \end{figure}
 
-Pozostaje jeszcze udowodnić, że oczekiwana złożoność czasowa zaimplementowanej metody jest logarytmiczna. Po pierwsze, możemy skorzystać z~lematu 3.3 z~pracy \cite{gawrychowski}, w~którym udowodniono, że prawdopodobieństwo że wysokość drzewa będzie nie większa niż $8(r + \ln (n))$ jest nie mniejsze niż $1 - e^{-r}$ dla dowolnej stałej $r$ rzeczywistej nieujemnej. Zatem jeśli drzewo symboli dla danego słowa powstaje dłuższe niż pewna stała razy $\ln (n)$, to~możemy przełączyć się na~rozwiązanie naiwne dla tego drzewa, a~prawdopodobieństwo tego przypadku jest na~tyle małe, że nie zmieni złożoności oczekiwanej. Musimy tak zrobić aby nie dopuścić zdegenerowanego przypadku drzew o~wykładniczej wysokości. Możemy zatem założyć, że każde drzewo symbolu dla słowa $w$ ma wysokość ograniczoną przez $c\ln(|w|)$, gdzie $c$ jest pewną stałą. Ponieważ w~naszej metodzie w~każdym kroku oboma wskaźnikami poruszamy się do~góry, to~wiemy, że tych faz będzie nie więcej niż $c \ln(n)$, a~w~każdej fazie jedyną niestałą w~sensie złożoności czasowej operacją, jest przechodzenie do~brata wybranego wierzchołka. Udowodnimy, że operacja ta jest stała w~sensie złożoności oczekiwanej, co wraz z~własnością liniowości wartości oczekiwanej implikuje oczekiwaną złożoność logarytmiczną opisywanej metody.
+Pozostaje jeszcze udowodnić, że oczekiwana złożoność czasowa zaimplementowanej metody jest logarytmiczna. Po pierwsze, możemy skorzystać z~lematu 3.3 z~pracy Gawrychowski et al.~\cite{gawrychowski}, w~którym udowodniono, że prawdopodobieństwo że wysokość drzewa będzie nie większa niż $8(r + \ln (n))$ jest nie mniejsze niż $1 - e^{-r}$ dla dowolnej stałej $r$ rzeczywistej nieujemnej. Zatem jeśli drzewo symboli dla danego słowa powstaje dłuższe niż pewna stała razy $\ln (n)$, to~możemy przełączyć się na~rozwiązanie naiwne dla tego drzewa, a~prawdopodobieństwo tego przypadku jest na~tyle małe, że nie zmieni złożoności oczekiwanej. Musimy tak zrobić aby nie dopuścić zdegenerowanego przypadku drzew o~wykładniczej wysokości. Możemy zatem założyć, że każde drzewo symbolu dla słowa $w$ ma wysokość ograniczoną przez $c\ln(|w|)$, gdzie $c$ jest pewną stałą. Ponieważ w~naszej metodzie w~każdym kroku oboma wskaźnikami poruszamy się do~góry, to~wiemy, że tych faz będzie nie więcej niż $c \ln(n)$, a~w~każdej fazie jedyną niestałą w~sensie złożoności czasowej operacją, jest przechodzenie do~brata wybranego wierzchołka. Udowodnimy, że operacja ta jest stała w~sensie złożoności oczekiwanej, co wraz z~własnością liniowości wartości oczekiwanej implikuje oczekiwaną złożoność logarytmiczną opisywanej metody.
 
 \begin{theorem}
     Implementacja metody $\texttt{right}$(x), znajdującej prawego brata wybranego wierzchołka na poziomie zerowym w~drzewie symbolu danego słowa, działa w~oczekiwanym czasie stałym.
@@ -591,10 +591,10 @@ Pokażemy teraz jak z twierdzenia 3.5 wynika oczekiwana logarytmiczna złożono�
 W tej części opiszę jak przy pomocy opisanych narzędzi zaimplementować funkcje opisane w~interfejsie.
 \begin{itemize}
     \item $\texttt{make\_string(word)}$ Używamy wprost funkcji \texttt{find\_representant}.
-    \item $\texttt{concat(label1, label2)}$ Znajdujemy RLE dekompozycji context-insensitive dla obu słów i~korzystamy z~lematu z~pracy \cite{gawrychowski}, który mówi, że konkatenacja dekompozycji context-insensitive jest dekompozycją context-insensitive. Następnie uruchamiamy na~tym funkcję \texttt{find\_representant}.
+    \item $\texttt{concat(label1, label2)}$ Znajdujemy RLE dekompozycji context-insensitive dla obu słów i~korzystamy z~lematu z~pracy Gawrychowski et al.~\cite{gawrychowski}, który mówi, że konkatenacja dekompozycji context-insensitive jest dekompozycją context-insensitive. Następnie uruchamiamy na~tym funkcję \texttt{find\_representant}.
     \item $\texttt{split(label, position)}$ Korzystamy z~możliwości wybrania dekompozycji context-insensitive dla ustalonego podsłowa. Znajdujemy dekompozycję \texttt{position}-prefiksu i~$(\texttt{position} + 1)$-sufiksu, następnie na~obu uruchamiamy funkcję \texttt{find\_representant}. 
     \item $\texttt{equals(label1, label2)}$ Porównujemy etykiety.
-    \item $\texttt{lcp(label1, label2)}$ Zostały zaimplementowane dwa sposoby. Pierwszy wyszukuje binarnie po~wyniku tak samo jak w~przypadku drzewców. Drugi bazuje na~pomyśle opisanym w~pracy \cite{gawrychowski} i~polega na~schodzeniu jednoczesnym w~obu drzewach wgłąb, jednocześnie przeskakując w~prawo jeśli opisywane w~danym momencie podsłowa są równe. Drugi sposób działa w~czasie proporcjonalnym do~wysokości drzew. Istnieje jeszcze trzeci sposób, dzięki któremu całość działa w~czasie stałym, nie został on jednak zaimplementowany ani opisany w~tej pracy.
+    \item $\texttt{lcp(label1, label2)}$ Zostały zaimplementowane dwa sposoby. Pierwszy wyszukuje binarnie po~wyniku tak samo jak w~przypadku drzewców. Drugi bazuje na~pomyśle opisanym w~pracy Gawrychowski et al.~\cite{gawrychowski} i~polega na~schodzeniu jednoczesnym w~obu drzewach wgłąb, jednocześnie przeskakując w~prawo jeśli opisywane w~danym momencie podsłowa są równe. Drugi sposób działa w~czasie proporcjonalnym do~wysokości drzew. Istnieje jeszcze trzeci sposób, dzięki któremu całość działa w~czasie stałym, nie został on jednak zaimplementowany ani opisany w~tej pracy.
     \item $\texttt{smaller(label1, label2)}$ Podobnie jak w~przypadku drzewców, korzystamy z~metody \texttt{lcp} a~następnie porównujemy następujące po~najdłuższym wspólnym prefiksie literki lub rozpatrujemy czy któreś ze słów już się skończyło. 
 \end{itemize}
 
@@ -649,7 +649,7 @@ W drugiej tabeli prezentuję opis złożoności czasowej dla zapytań do~struktu
     \end{tabular}
 \end{center}
 
-Główna różnica między zaimplementowanym rozwiązaniem, a~rozwiązaniem opisanym w~pracy \cite{gawrychowski} jest taka, że uzyskane przy implementacji złożoności są oczekiwane, a~uzyskane w~pracy złożoności są złożonościami typu \textit{z dużym prawdopodobieństwem} (od angielskiego \textit{with high probability}). Oznacza to, że prawdopodobieństwo uzyskania podanej złożoności dla danych wejściowych rozmiaru $n$ jest nie mniejsze niż $1 - \frac{1}{n^c}$, gdzie $c$ jest pewną stałą. Dodatkowo, w~przypadku pracy \cite{gawrychowski}, zwiększając stałe w~opisanym algorytmie, jesteśmy w~stanie uzyskać dowolnie wysoki stopień podanego wielomianu $W(n)$, czyli możemy myśleć, że możemy znaleźć odpowiednią stałą, taką że jesteśmy w~stanie otrzymać algorytm, który z~prawdopodobieństwem większym niż $1 - \frac{1}{n^c}$, gdzie $c$ jest stałą wybraną przez nas, działa w~złożoności czasowej opisanej w~pracy.
+Główna różnica między zaimplementowanym rozwiązaniem, a~rozwiązaniem opisanym w~pracy Gawrychowski et al.~\cite{gawrychowski} jest taka, że uzyskane przy implementacji złożoności są oczekiwane, a~uzyskane w~pracy złożoności są złożonościami typu \textit{z dużym prawdopodobieństwem} (od angielskiego \textit{with high probability}). Oznacza to, że prawdopodobieństwo uzyskania podanej złożoności dla danych wejściowych rozmiaru $n$ jest nie mniejsze niż $1 - \frac{1}{n^c}$, gdzie $c$ jest pewną stałą. Dodatkowo, w~przypadku pracy Gawrychowski et al.~\cite{gawrychowski}, zwiększając stałe w~opisanym algorytmie, jesteśmy w~stanie uzyskać dowolnie wysoki stopień podanego wielomianu $W(n)$, czyli możemy myśleć, że możemy znaleźć odpowiednią stałą, taką że jesteśmy w~stanie otrzymać algorytm, który z~prawdopodobieństwem większym niż $1 - \frac{1}{n^c}$, gdzie $c$ jest stałą wybraną przez nas, działa w~złożoności czasowej opisanej w~pracy.
 
 \chapter{Analiza wydajności programów}
 
@@ -659,10 +659,10 @@ Niech $n$ oznacza długość słowa, które jest podane jako pierwszy argument f
 
 W pierwszej tabeli prezentuję opis złożoności czasowej dla funkcji aktualizujących zbiór $\mathcal{S}$. 
 
-W poniższych tabelach podane są zaimplementowane przeze mnie programy jak i trzy podejścia opisane w publikacjach naukowych, jedno z opisywanej przeze mnie już wcześniej pracy \cite{gawrychowski}, a pozostałe dwa z wcześniejszych prac \cite{mehlhorn} oraz \cite{alstrup}.
+W poniższych tabelach podane są zaimplementowane przeze mnie programy jak i trzy podejścia opisane w publikacjach naukowych, jedno z opisywanej przeze mnie już wcześniej pracy Gawrychowski et al.~\cite{gawrychowski}, a pozostałe dwa z wcześniejszych prac Mehlhorn et al.~\cite{mehlhorn} oraz Alstrup et al.~\cite{alstrup}.
 
 \begin{center}
-    \begin{tabular}{ | m{3.5cm} | >{\centering\arraybackslash}m{2.8cm} | >{\centering\arraybackslash}m{2.8cm} | >{\centering\arraybackslash}m{2.8cm} | }
+    \begin{tabular}{ | m{2.3cm} | >{\centering\arraybackslash}m{2.8cm} | >{\centering\arraybackslash}m{4.5cm} | >{\centering\arraybackslash}m{2.8cm} | }
         \hline 
         Rozwiązanie & $\texttt{make\_string}$ & $\texttt{concat}$ & $\texttt{split}$ \\
         \hline
@@ -672,11 +672,11 @@ W poniższych tabelach podane są zaimplementowane przeze mnie programy jak i tr
         \hline
         Parsingi & oczekiwana $\mathcal{O}(n)$ & oczekiwana $\mathcal{O}(\log(n + m))$ & oczekiwana $\mathcal{O}(\log n)$ \\
         \hline
-        \citeauthor{gawrychowski} & $\mathcal{O}(n)$ w.h.p. & $\mathcal{O}(\log(n + m))$ w.h.p. & $\mathcal{O}(\log n)$ w.h.p. \\
+        Gawrychowski et~al.~\cite{gawrychowski} & $\mathcal{O}(n)$ w.h.p. & $\mathcal{O}(\log(n + m))$ w.h.p. & $\mathcal{O}(\log n)$ w.h.p. \\
         \hline
-        \citeauthor{mehlhorn} & deterministyczna $\mathcal{O}(n)$ & deterministyczna $\mathcal{O}(\log^2(n + m)\log^\star(n + m))$ & deterministyczna $\mathcal{O}(\log^2 n \log^\star n)$ \\
+        Mehlhorn et~al.~\cite{mehlhorn} & deterministyczna $\mathcal{O}(n)$ & deterministyczna $\mathcal{O}(\log^2(n + m)\log^\star(n + m))$ & deterministyczna $\mathcal{O}(\log^2 n \log^\star n)$ \\
         \hline
-        \citeauthor{alstrup} & $\mathcal{O}(n)$ w.h.p. & $\mathcal{O}(\log(n + m)\log^\star(n + m))$ w.h.p. & $\mathcal{O}(\log n \log^\star n)$ w.h.p.\\
+        Alstrup et~al.~\cite{alstrup} & $\mathcal{O}(n)$ w.h.p. & $\mathcal{O}(\log(n + m)\log^\star(n + m))$ w.h.p. & $\mathcal{O}(\log n \log^\star n)$ w.h.p.\\
         \hline
     \end{tabular}
 \end{center}
@@ -696,11 +696,11 @@ W drugiej tabeli prezentuję opis złożoności czasowej dla zapytań do~struktu
         \hline
         Parsingi (wolne~\texttt{lcp}) & deterministyczna $\mathcal{O}(1)$ & oczekiwana $\mathcal{O}(\log^2(n + m))$ & oczekiwana $\mathcal{O}(\log^2(n + m))$ \\
         \hline
-        \citeauthor{gawrychowski} & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ \\
+        Gawrychowski et~al.~\cite{gawrychowski} & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ \\
         \hline
-        \citeauthor{mehlhorn} & deterministyczna $\mathcal{O}(1)$ & --- & ---\\
+        Mehlhorn et~al.~\cite{mehlhorn} & deterministyczna $\mathcal{O}(1)$ & --- & ---\\
         \hline
-        \citeauthor{alstrup} & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ \\
+        Alstrup et~al.~\cite{alstrup} & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ \\
         \hline
     \end{tabular}
 \end{center}
@@ -757,7 +757,7 @@ PASSED 1000000 OUT OF 1000000 TESTS (100%)
 
 Programy zostały przetestowane na testach odpowiadających testom poprawnościowym. Każdy program był odpalany wielokrotnie, a wynik uśredniany, dodatkowo zakres otrzymanych wyników podczas powtarzania został zawarty na wykresach.
 
-Na początek przeanalizujmy testy realizujące funkcjonalność tablicy sufiksowej. W poniższych testach tworzyliśmy słowo długości $10^4$, a następnie wykonywaliśmy pewną liczbę zapytań typu \texttt{lcp}. Liczba zapytań stanowi wartość na osi OX. Na osi OY oznaczono czas działania programu w milisekundach.
+Na początek przeanalizujmy testy realizujące funkcjonalność tablicy sufiksowej. W poniższych testach tworzyliśmy słowo długości $10^4$, a następnie wykonywaliśmy pewną liczbę zapytań typu \texttt{lcp}. Liczba zapytań stanowi wartość na osi OX. Na osi OY oznaczono czas działania programu w milisekundach. W testach przedstawionych na wykresach słowami testowymi były losowe słowa składające się z liter $\{0, 1\}$, programy zostały również przetestowane na testach z większym alfabetem oraz na testach, gdzie wartości \texttt{lcp} są duże, np. słowa postaci $0^n1$.
 
 Każdy test przedstawiony w poniższych wykresach był powtórzony dziesięciokrotnie. Czas działania został określony jako średnia arytmetyczna wszystkich powtórzeń. Dodatkowo na wszystkich wykresach zostały zaznaczone (w postaci pionowych przedziałów) uzyskane czasy, od najmniejszego do największego. Wszystkie czasy są podane w milisekundach.
 
@@ -790,6 +790,6 @@ Wykonywanie naprzemiennie losowych poprawnych operacji na słowniku oraz zapyta�
 Przeprowadzone eksperymenty potwierdziły, że nawet mimo sporej stałej, algorytm realizujący drzewa parsingów będzie najlepszym wyborem w przypadku gdy korzystając z naszego interfejsu, największą część będą stanowiły zapytania, które są asymptotycznie wolniejsze w pozostałych strukturach. Przy analizie wyników eksperymentu należy uwzględnić dwie rzeczy: podana implementacja drzew parsingów nie jest optymalna, nawet pomijając fakt przejścia ze złożoności typu w.h.p. na złożoność oczekiwaną. Z drugiej strony sama techniczna część implementacji na pewno mogłaby mieć wiele usprawnień, ale miejsce na takie zwykle przychodzi po wielokrotnych implementacjach tej samej struktury. W moim przypadku drzewa zbalansowane implementowałem wiele razy, dlatego znałem techniki pozwalające znacznie poprawić stałą kryjącą się za algorytmem, czego nie mogę powiedzieć o implementacji drzew parsingów, która była przeze mnie tworzona po raz pierwszy. Różnica w stałej, na przykład między operacjami \texttt{split} z interfejsu jest bardzo mocno widoczna na wykresie 4.1, ponieważ wolniejsza wersja drzew parsingów i drzewce implementują dokładnie takie samo wyszukiwanie binarne, zatem cała różnica wynika z funkcji \texttt{split}, a różnica jest bardzo duża. Oczywiście dużym plusem w przypadku drzew parsingów jest brak Monte Carlo, które jest obecne w drzewcach oraz możliwość implementacji w rozsądnym czasie, sporo algorytmów opisywanych w pracach naukowych jest zbyt skomplikowanych do implementacji i używania w praktycznych zastosowaniach, czego nie można powiedzieć o tej strukturze. Myślę, że odpowiednio dopracowana implementacja drzew parsingów może znaleźć swoje miejsce w wielu praktycznych zastosowaniach.
 
 \bibliography{bibliography}
-\bibliographystyle{apalike}
+\bibliographystyle{plain}
 
 \end{document}
