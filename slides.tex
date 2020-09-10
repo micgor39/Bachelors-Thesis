@@ -1,0 +1,473 @@
+\documentclass[polish]{beamer}
+\usepackage[polish]{babel}
+\usepackage{polski,datetime,algorithm,tikz,graphicx,listings,amsthm,mathtools,array,caption,forest,comment,bbold,svg,natbib,pgf,import}
+\usepackage[noend]{algpseudocode}
+\usetikzlibrary{shapes.geometric}
+\forestset{%
+  default preamble={
+    for tree={
+      circle,
+      draw,
+      inner sep=0pt,
+      minimum size=1cm,
+      font=\scriptsize,
+      edge=->,
+      anchor=north
+    }
+  },
+  ssarbre/.style={isosceles triangle,
+                  draw,
+                  shape border rotate=90,
+                  minimum size=2cm,
+                  child anchor=apex,
+                  anchor=apex}
+}
+\usetheme{Boadilla}
+
+\title[Obrona pracy licencjackiej]{Implementacja wydajnych struktur danych\\ do~praktycznych operacji na~słowach}
+\subtitle{(Implementation of efficient data structures\\ for practical string operations)}
+\author{Michał Górniak}
+\institute[II UWr]{Instytut Informatyki Uniwersytetu Wrocławskiego}
+\newdate{date}{11}{09}{2020}
+\date{\displaydate{date}}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% block, example, alertblock, pause
+
+\begin{frame}{Opis problemu}
+    \begin{block}{}
+        Chcemy utrzymywać i modyfikować zbiór słów $\mathcal{S}$, słowa w tym słowniku będą mogły być bardzo długie, więc przy dodawaniu nowych słów, będziemy dostawać od programu etykietę -- liczbę naturalną dzięki której będziemy mogli łatwo odwoływać się do wybranych słów. Oznaczmy przez $\mathcal{W}(l)$ słowo reprezentowane przez etykietę $l$.
+    \end{block}
+    \pause
+    W każdym momencie możemy modyfikować słownik lub zadawać zapytania:
+    \begin{itemize}
+        \item $\texttt{make\_string}(w)$ -- $\mathcal{S} \coloneqq \mathcal{S} \cup \{w\}$,
+        \item $\texttt{concat}(l_1, l_2)$ -- $\mathcal{S} \coloneqq \mathcal{S} \cup \{\mathcal{W}(l_1)\mathcal{W}(l_2)\}$,
+        \item $\texttt{split}(l, p)$ -- $\mathcal{S} \coloneqq \mathcal{S} \cup \{\mathcal{W}(l)_{\ldots p}, \mathcal{W}(l)_{(p + 1) \ldots}\}$, \pause
+        \item $\texttt{equals}(l_1, l_2)$ -- zwróć $\mathcal{W}(l_1) = \mathcal{W}(l_2)$,
+        \item $\texttt{smaller}(l_1, l_2)$ -- zwróć $\mathcal{W}(l_1) <_{\text{lex}} \mathcal{W}(l_2)$,
+        \item $\texttt{lcp}(l_1, l_2)$ -- zwróć najdłuższy wspólny prefiks $\mathcal{W}(l_1)$ i $\mathcal{W}(l_2)$.
+    \end{itemize}
+\end{frame}
+
+\newsavebox{\firstbox}
+
+\begin{frame}{Tabela złożoności (modyfikacje słownika)}
+    \begin{lrbox}{\firstbox}
+        \begin{tabular}{ | m{2.3cm} | >{\centering\arraybackslash}m{2.8cm} | >{\centering\arraybackslash}m{4.5cm} | >{\centering\arraybackslash}m{2.8cm} | }
+            \hline
+            Rozwiązanie & $\texttt{make\_string}$ & $\texttt{concat}$ & $\texttt{split}$ \\
+            \hline
+            Naiwne & deterministyczna $\mathcal{O}(n)$ & deterministyczna $\mathcal{O}(n + m)$ & deterministyczna $\mathcal{O}(n)$ \\ 
+            \hline
+            Drzewce & oczekiwana $\mathcal{O}(n)$ & oczekiwana $\mathcal{O}(\log(n + m))$ & oczekiwana $\mathcal{O}(\log n)$ \\
+            \hline
+            Parsingi & oczekiwana $\mathcal{O}(n)$ & oczekiwana $\mathcal{O}(\log(n + m))$ & oczekiwana $\mathcal{O}(\log n)$ \\
+            \hline
+            Gawrychowski et~al. & $\mathcal{O}(n)$ w.h.p. & $\mathcal{O}(\log(n + m))$ w.h.p. & $\mathcal{O}(\log n)$ w.h.p. \\
+            \hline
+            Mehlhorn et~al. & deterministyczna $\mathcal{O}(n)$ & deterministyczna $\mathcal{O}(\log^2(n + m)\log^\star(n + m))$ & deterministyczna $\mathcal{O}(\log^2 n \log^\star n)$ \\
+            \hline 
+            Alstrup et~al. & $\mathcal{O}(n)$ w.h.p. & $\mathcal{O}(\log(n + m)\log^\star(n + m))$ w.h.p. & $\mathcal{O}(\log n \log^\star n)$ w.h.p.\\
+            \hline
+        \end{tabular}
+    \end{lrbox}
+    \begin{block}{}
+        Niech $n$ oznacza długość słowa, które jest podane jako pierwszy argument funkcji (lub długość słowa pod etykietą z~pierwszego argumentu). W przypadku funkcji o~dwóch argumentach będących słowami lub etykietami, długość drugiego słowa oznaczmy przez $m$.
+    \end{block}
+    \pause
+    \begin{center}
+        \scalebox{0.8}{\usebox{\firstbox}}
+    \end{center}
+\end{frame}
+
+\newsavebox{\secondbox}
+
+\begin{frame}{Tabela złożoności (zapytania do struktury)}
+    \begin{lrbox}{\secondbox}
+        \begin{tabular}{ | m{3.5cm} | >{\centering\arraybackslash}m{2.8cm} | >{\centering\arraybackslash}m{2.8cm} | >{\centering\arraybackslash}m{2.8cm} | }
+            \hline
+            Rozwiązanie & $\texttt{equals}$ & $\texttt{smaller}$ & $\texttt{lcp}$ \\
+            \hline
+            Naiwne & deterministyczna $\mathcal{O}(\min(n, m))$ & deterministyczna $\mathcal{O}(\min(n, m))$ & deterministyczna $\mathcal{O}(\min(n, m))$ \\
+            \hline
+            Drzewce & Monte Carlo $\mathcal{O}(1)$ & oczekiwana Monte Carlo $\mathcal{O}(\log^2(n + m))$ & oczekiwana Monte Carlo $\mathcal{O}(\log^2(n + m))$ \\
+            \hline
+            Parsingi & deterministyczna $\mathcal{O}(1)$ & oczekiwana $\mathcal{O}(\log(n + m))$ & oczekiwana $\mathcal{O}(\log(n + m))$ \\
+            \hline
+            Parsingi (wolne~\texttt{lcp}) & deterministyczna $\mathcal{O}(1)$ & oczekiwana $\mathcal{O}(\log^2(n + m))$ & oczekiwana $\mathcal{O}(\log^2(n + m))$ \\
+            \hline
+            Gawrychowski et~al. & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ \\
+            \hline
+            Mehlhorn et~al. & deterministyczna $\mathcal{O}(1)$ & --- & ---\\
+            \hline
+            Alstrup et~al. & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ & deterministyczna $\mathcal{O}(1)$ \\
+            \hline
+        \end{tabular}
+    \end{lrbox}
+    \begin{center}
+        \scalebox{0.8}{\usebox{\secondbox}}
+    \end{center}
+\end{frame}
+
+\newsavebox{\thirdbox}
+
+\begin{frame}[fragile]{O implementacji}
+    \begin{block}{Struktura kodu}
+        Kod został podzielony na foldery, dzięki czemu można łatwo nawigować po projekcie. Implementacja każdej klasy znajduje się w osobnym pliku. Aby wiernie odwzorować problem z zadania, zaimplementowane struktury danych dziedziczą z abstrakcyjnej klasy \texttt{solution.h}.
+    \end{block}
+    \pause
+    \lstset{language=C++,
+            basicstyle=\ttfamily,
+            keywordstyle=\color{blue}\ttfamily,
+            stringstyle=\color{red}\ttfamily,
+            commentstyle=\color{green}\ttfamily,
+            morecomment=[l][\color{magenta}]{\#},
+            numbers=left, 
+            numberstyle=\small, 
+            numbersep=8pt,
+            frame=single
+    }
+    \begin{lrbox}{\thirdbox}
+        \begin{lstlisting}[linewidth=18cm]
+class solution {
+    public:
+        virtual ~solution() = 0;
+        virtual int make_string(std::vector<int> &word) = 0;
+        virtual int concat(int label1, int label2) = 0;
+        virtual std::pair<int, int> split(int label, int position) = 0;
+        virtual bool equals(int label1, int label2) = 0;
+        virtual bool smaller(int label1, int label2) = 0;
+        virtual int longest_common_prefix(int label1, int label2) = 0;
+};
+        \end{lstlisting}
+    \end{lrbox}
+    \begin{block}{Implementacja \texttt{solution.h}}
+    \begin{center}
+        \vskip 2mm
+        \scalebox{0.6}{\usebox{\thirdbox}}
+    \end{center}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Drzewce}
+    \begin{block}{Pomysł}
+        Każde drzewo zbalansowane reprezentuje jedno słowo ze słownika. Używamy drzew zbalansowanych, które można łączyć i dzielić w czasie logarytmicznym. W każdym wierzchołku trzymamy hasz całego poddrzewa. Równość dwóch słów sprawdzamy porównując hasze, a \texttt{lcp} i porównanie leksykograficzne poprzez wyszukiwanie binarne po wyniku wraz w każdorazowym rozcinaniem drzewa.
+    \end{block}
+    \pause
+    \begin{block}{O drzewcach}
+        Implementacja drzewców nie wymaga implementacji rotacji drzewa. Drzewo musi zachowywać porządek kopcowy patrząc na priorytety, a porządek BST patrząc na klucze. W ten sposób zawsze powstaje \textbf{dokładnie} jeden drzewiec.
+    \end{block}
+    \pause
+    \begin{example}
+        W kolejnym slajdzie opiszemy działanie funkcji \texttt{merge}.
+    \end{example}
+\end{frame}
+
+\newsavebox{\sixthbox}
+\newsavebox{\seventhbox}
+
+\begin{frame}[fragile]{Operacja \texttt{merge} (teoria)}
+    \begin{lrbox}{\sixthbox}
+        \begin{forest}
+            [$k/p$ [$L$,ssarbre] [$R$,ssarbre]]
+        \end{forest}
+        \hspace{1cm}
+        \begin{forest}
+            [$B$,ssarbre,minimum size=3cm]
+        \end{forest}
+    \end{lrbox}
+    \begin{example}
+        Załóżmy, że chcemy złączyć drzewce $A$ oraz $B$ i bez straty ogólności $A$ ma większy priorytet w korzeniu niż $B$.
+        \begin{center}
+            \scalebox{0.5}{\usebox{\sixthbox}}
+        \end{center}
+    \end{example}
+    \pause
+    \begin{lrbox}{\seventhbox}
+        \begin{forest}
+            [$k/p$, [$L$,ssarbre,minimum size=2.5cm] [$\texttt{merge}(R\text{,}B)$,ssarbre,minimum size=2.5cm]]
+        \end{forest}
+    \end{lrbox}
+    \begin{block}{}
+        Wystarczy zatem wywołać rekurencyjnie $\texttt{merge}(R, B)$ i podpiąć odpowiednio wskaźniki.
+        \begin{center}
+            \scalebox{0.5}{\usebox{\seventhbox}}
+        \end{center}
+    \end{block}
+\end{frame}
+
+\newsavebox{\fifthbox}
+
+\begin{frame}[fragile]{Operacja \texttt{merge} (implementacja)}
+    \lstset{language=C++,
+            basicstyle=\ttfamily,
+            keywordstyle=\color{blue}\ttfamily,
+            stringstyle=\color{red}\ttfamily,
+            commentstyle=\color{green}\ttfamily,
+            morecomment=[l][\color{magenta}]{\#},
+            numbers=left, 
+            numberstyle=\small, 
+            numbersep=8pt,
+            frame=single
+    }
+    \begin{lrbox}{\fifthbox}
+        \begin{lstlisting}[linewidth=18cm]
+balanced_trees::treap *balanced_trees::merge(balanced_trees::treap *t1,
+                                             balanced_trees::treap *t2) {
+    if (t1 == nullptr) {
+        return t2;
+    }
+    if (t2 == nullptr) {
+        return t1;
+    }
+    if (t1->priority > t2->priority) {
+        auto return_treap = new treap(*t1);
+        return_treap->right_subtree = merge(t1->right_subtree, t2);
+        update_values(return_treap);
+        return return_treap;
+    } else {
+        auto return_treap = new treap(*t2);
+        return_treap->left_subtree = merge(t1, t2->left_subtree);
+        update_values(return_treap);
+        return return_treap;
+    }
+}
+        \end{lstlisting}
+    \end{lrbox}
+    \begin{center}
+        \scalebox{0.6}{\usebox{\fifthbox}}
+    \end{center}
+\end{frame}
+
+\newsavebox{\eighthbox}
+
+\begin{frame}[fragile]{Drzewa symboli (\textit{parse trees})}
+    \begin{block}{Gramatyka bezkontekstowa}
+        Tworzymy gramatykę bezkontekstową, ale bez pojedynczego symbolu startowego. Utrzymujemy natomiast, że każdy symbol generuje \textbf{dokładnie jedno słowo}. Każdy symbol ma przypisany poziom, na którym występuje. Symbole powstają podczas tworzenia \textit{drzewa symbolu} nad nowym słowem.
+    \end{block}
+    \pause
+    \begin{lrbox}{\eighthbox}
+        \begin{forest}
+            [$O$,
+                [$M$,fill=lightgray, 
+                    [$K$,
+                        [$H$,fill=lightgray,
+                            [$E$,
+                                [$A$,fill=lightgray,
+                                    [$a$]
+                                    [$a$]
+                                ]
+                                [\underline{$B$},fill=lightgray,
+                                    [$b$]
+                                    [$b$]
+                                ]
+                            ]
+                            [$E$,
+                                [$A$,fill=lightgray,
+                                    [$a$]
+                                    [$a$]
+                                ]
+                                [\underline{$B$},fill=lightgray,
+                                    [$b$]
+                                    [$b$]
+                                ]
+                            ]
+                        ]
+                    ] 
+                ]
+                [\underline{$N$},fill=lightgray,
+                    [$L$,
+                        [$I$,fill=lightgray,
+                            [$F$,
+                                [\underline{$C$},fill=lightgray,
+                                    [$c$]
+                                    [$c$]
+                                    [$c$]
+                                ]
+                            ]
+                        ]
+                        [\underline{$J$},fill=lightgray,
+                            [$G$,
+                                [$D$,fill=lightgray,
+                                    [$d$]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        \end{forest}
+    \end{lrbox}
+    \begin{block}{Tworzenie drzewa symbolu}
+        \begin{columns}
+            \begin{column}{0.58\textwidth}
+                Polega na naprzemiennym wykonywaniu kompresji typu RLE (\textit{run-length encoding}) oraz SHRINK, która zależy od losowych bitów symboli.
+            \end{column}
+                \begin{column}{0.38\textwidth}
+                \begin{center}
+                    \scalebox{0.3}{\usebox{\eighthbox}}
+                \end{center}
+            \end{column}
+        \end{columns}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Twierdzenie o oczekiwanym czasie budowy drzewa symbolu}
+    \begin{alertblock}{Twierdzenie}
+        Oczekiwany czas budowy drzewa nad słowem długości $n$, wynosi $\mathcal{O}(n)$.
+    \end{alertblock}
+    \pause
+    \begin{block}{Fakt z pracy \textit{Optimal Dynamic Strings}}
+        Po zastosowaniu kompresji typu RLE, a~następnie kompresji typu SHRINK na~dowolnym słowie $w$, oczekiwana długość słowa $w^\prime$ powstałego w~wyniku kompresji jest nie większa niż $\frac{3}{4}|w| + \frac{1}{4}$.
+    \end{block}
+    \pause
+    \begin{block}{Szkic dowodu}
+        \begin{itemize}
+            \item indukcja względem długości słowa,
+            \item wykorzystanie powyższego faktu wraz z nierównością Markowa, aby oszacować prawdopodobieństwo, że długość słowa po dwóch kolejnych fazach kompresji skróci się przez stały czynnik.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\newsavebox{\ninethbox}
+
+\begin{frame}[fragile]{Dekompozycja context-insensitive}
+    \begin{block}{Motywacja}
+        Nie możemy w prosty sposób (podobnie jak w drzewach zbalansowanych) łączyć dwóch drzew symboli. Okazuje się jednak, że możemy zawsze znaleźć pewną \textit{warstwę} drzewa symbolu, której RLE jest długości logarytmicznej i jest ona typu context-insensitive.
+    \end{block}
+    \pause
+    % \begin{block}{Łączenie i dzielenie słów}
+    %     Możemy wobec tego przy łączeniu znaleźć dekompozycje obu słów, a następnie je połączyć. Powstała lista jest dekompozycją konkatenacji początkowych dwóch słów. Następnie dobudowujemy górną część drzewa symbolu, podobnie jak przy budowaniu od liści. Dzielenie polega na wybraniu dekompozycji typu context-insensitive wybranego podsłowa i zbudowaniu nad nią drzewa symbolu.
+    % \end{block}
+    \begin{lrbox}{\ninethbox}
+        \begin{forest}
+            [$O$,
+                [$M$,
+                    [$K$,
+                        [$H$,
+                            [$E$,
+                                [$A$,
+                                    [$a$,fill=lightgray]
+                                    [$a$,fill=lightgray]
+                                ]
+                                [$B$,fill=lightgray,
+                                    [$b$]
+                                    [$b$]
+                                ]
+                            ]
+                            [$E$,fill=lightgray,
+                                [$A$,
+                                    [$a$]
+                                    [$a$]
+                                ]
+                                [$B$,
+                                    [$b$]
+                                    [$b$]
+                                ]
+                            ]
+                        ]
+                    ] 
+                ]
+                [$N$,
+                    [$L$,
+                        [$I$,
+                            [$F$,
+                                [$C$,fill=lightgray,
+                                    [$c$]
+                                    [$c$]
+                                    [$c$]
+                                ]
+                            ]
+                        ]
+                        [$J$,
+                            [$G$,
+                                [$D$,
+                                    [$d$,fill=lightgray]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        \end{forest}
+    \end{lrbox}
+    \begin{block}{Łączenie i dzielenie słów}
+    \begin{columns}
+        \begin{column}{0.58\textwidth}
+            \small Możemy wobec tego przy łączeniu znaleźć dekompozycje obu słów, a następnie je połączyć. Powstała lista jest dekompozycją konkatenacji początkowych dwóch słów. Następnie dobudowujemy górną część drzewa symbolu, podobnie jak przy budowaniu od liści. Dzielenie polega na wybraniu dekompozycji typu context-insensitive wybranego podsłowa i zbudowaniu nad nią drzewa symbolu.
+        \end{column}
+            \begin{column}{0.38\textwidth}
+            \begin{center}
+                \scalebox{0.3}{\usebox{\ninethbox}}
+            \end{center}
+        \end{column}
+    \end{columns}
+    \end{block}
+\end{frame}
+
+\newsavebox{\fourthbox}
+
+\begin{frame}[fragile]{Przykładowe uruchomienie}
+    \begin{example}
+    Wywołanie \texttt{./run 129873 correctness 1}.
+    \end{example}
+
+\begin{lrbox}{\fourthbox}
+    \begin{lstlisting}[basicstyle=\tiny,frame=single,linewidth=8cm]
+RUNNING RANDOM TESTS
+----------------------------------------
+RUNNING BALANCED TREES SOLUTION
+[**************************************************] 100%
+PASSED 5147518 OUT OF 5147518 TESTS (100%)
+RUNNING RANDOM TESTS
+----------------------------------------
+RUNNING PARSE TREES LCP LOG^2 SOLUTION
+[**************************************************] 100%
+PASSED 5146257 OUT OF 5146257 TESTS (100%)
+RUNNING RANDOM TESTS
+----------------------------------------
+RUNNING PARSE TREES LCP LOG SOLUTION
+[**************************************************] 100%
+PASSED 5147611 OUT OF 5147611 TESTS (100%)
+    \end{lstlisting}
+\end{lrbox}
+\begin{alertblock}{Wydruk z terminala}
+\begin{center}
+    \vskip 2mm
+    \scalebox{1.2}{\usebox{\fourthbox}}
+\end{center}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Wykresy czasów działania}
+    \begin{block}{}
+        Testy z tablicą sufiksową.
+    \end{block}
+    \begin{figure}[!htb]
+        \centering
+        \scalebox{0.32}{\input{charts/tablica1.pgf}}
+        \scalebox{0.32}{\input{charts/tablica2.pgf}}
+    \end{figure}
+    \pause
+    \begin{block}{}
+        Testy z losowymi poprawnymi operacjami na słowniku.
+    \end{block}
+    \begin{figure}[!htb]
+        \centering
+        \scalebox{0.32}{\input{charts/losowy1.pgf}}
+        \scalebox{0.32}{\input{charts/losowy2.pgf}}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \centering
+    Dziękuję za uwagę.
+\end{frame}
+
+\end{document}}
