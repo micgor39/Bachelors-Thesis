@@ -23,6 +23,7 @@
                   anchor=apex}
 }
 \usetheme{Boadilla}
+\beamertemplatenavigationsymbolsempty
 
 \title[Obrona pracy licencjackiej]{Implementacja wydajnych struktur danych\\ do~praktycznych operacji na~słowach}
 \subtitle{(Implementation of efficient data structures\\ for practical string operations)}
@@ -37,21 +38,27 @@
     \titlepage
 \end{frame}
 
-% block, example, alertblock, pause
-
 \begin{frame}{Opis problemu}
+    \begin{alertblock}{}
+        Chcemy utrzymywać dynamiczny zbiór słów $\mathcal{S}$.
+    \end{alertblock}
+    \pause
     \begin{block}{}
-        Chcemy utrzymywać i modyfikować zbiór słów $\mathcal{S}$, słowa w tym słowniku będą mogły być bardzo długie, więc przy dodawaniu nowych słów, będziemy dostawać od programu etykietę -- liczbę naturalną dzięki której będziemy mogli łatwo odwoływać się do wybranych słów. Oznaczmy przez $\mathcal{W}(l)$ słowo reprezentowane przez etykietę $l$.
+        Słowa w tym słowniku będą mogły być bardzo długie, więc przy dodawaniu nowych słów, będziemy dostawać od programu etykietę $\ell$, dzięki której będziemy mogli łatwo odwoływać się do wybranych słów. 
+    \end{block}
+    \pause
+    \begin{block}{}
+        Oznaczmy przez $\mathcal{W}(\ell)$ słowo reprezentowane przez etykietę $\ell$.
     \end{block}
     \pause
     W każdym momencie możemy modyfikować słownik lub zadawać zapytania:
     \begin{itemize}
         \item $\texttt{make\_string}(w)$ -- $\mathcal{S} \coloneqq \mathcal{S} \cup \{w\}$,
-        \item $\texttt{concat}(l_1, l_2)$ -- $\mathcal{S} \coloneqq \mathcal{S} \cup \{\mathcal{W}(l_1)\mathcal{W}(l_2)\}$,
-        \item $\texttt{split}(l, p)$ -- $\mathcal{S} \coloneqq \mathcal{S} \cup \{\mathcal{W}(l)_{\ldots p}, \mathcal{W}(l)_{(p + 1) \ldots}\}$, \pause
-        \item $\texttt{equals}(l_1, l_2)$ -- zwróć $\mathcal{W}(l_1) = \mathcal{W}(l_2)$,
-        \item $\texttt{smaller}(l_1, l_2)$ -- zwróć $\mathcal{W}(l_1) <_{\text{lex}} \mathcal{W}(l_2)$,
-        \item $\texttt{lcp}(l_1, l_2)$ -- zwróć najdłuższy wspólny prefiks $\mathcal{W}(l_1)$ i $\mathcal{W}(l_2)$.
+        \item $\texttt{concat}(\ell_1, \ell_2)$ -- $\mathcal{S} \coloneqq \mathcal{S} \cup \{\mathcal{W}(\ell_1)\mathcal{W}(\ell_2)\}$,
+        \item $\texttt{split}(\ell, p)$ -- $\mathcal{S} \coloneqq \mathcal{S} \cup \{\mathcal{W}(\ell)_{\ldots p}, \mathcal{W}(\ell)_{(p + 1) \ldots}\}$, \pause
+        \item $\texttt{equals}(\ell_1, \ell_2)$ -- zwróć $\mathcal{W}(\ell_1) = \mathcal{W}(\ell_2)$,
+        \item $\texttt{smaller}(\ell_1, \ell_2)$ -- zwróć $\mathcal{W}(\ell_1) <_{\text{lex}} \mathcal{W}(\ell_2)$,
+        \item $\texttt{lcp}(\ell_1, \ell_2)$ -- zwróć najdłuższy wspólny prefiks $\mathcal{W}(\ell_1)$ i $\mathcal{W}(\ell_2)$.
     \end{itemize}
 \end{frame}
 
@@ -59,7 +66,7 @@
 
 \begin{frame}{Tabela złożoności (modyfikacje słownika)}
     \begin{lrbox}{\firstbox}
-        \begin{tabular}{ | m{2.3cm} | >{\centering\arraybackslash}m{2.8cm} | >{\centering\arraybackslash}m{4.5cm} | >{\centering\arraybackslash}m{2.8cm} | }
+        \begin{tabular}{ | m{3.3cm} | >{\centering\arraybackslash}m{2.8cm} | >{\centering\arraybackslash}m{4.5cm} | >{\centering\arraybackslash}m{2.8cm} | }
             \hline
             Rozwiązanie & $\texttt{make\_string}$ & $\texttt{concat}$ & $\texttt{split}$ \\
             \hline
@@ -78,7 +85,11 @@
         \end{tabular}
     \end{lrbox}
     \begin{block}{}
-        Niech $n$ oznacza długość słowa, które jest podane jako pierwszy argument funkcji (lub długość słowa pod etykietą z~pierwszego argumentu). W przypadku funkcji o~dwóch argumentach będących słowami lub etykietami, długość drugiego słowa oznaczmy przez $m$.
+        Niech $n$ oznacza długość słowa, które jest podane jako pierwszy argument funkcji.
+    \end{block}
+    \pause
+    \begin{block}{}
+        Niech $m$ oznacza długość słowa, które jest podane jako drugi argument funkcji (jeśli istnieje).
     \end{block}
     \pause
     \begin{center}
@@ -96,7 +107,7 @@
             \hline
             Naiwne & deterministyczna $\mathcal{O}(\min(n, m))$ & deterministyczna $\mathcal{O}(\min(n, m))$ & deterministyczna $\mathcal{O}(\min(n, m))$ \\
             \hline
-            Drzewce & Monte Carlo $\mathcal{O}(1)$ & oczekiwana Monte Carlo $\mathcal{O}(\log^2(n + m))$ & oczekiwana Monte Carlo $\mathcal{O}(\log^2(n + m))$ \\
+            Drzewce & Monte Carlo $\mathcal{O}(1)$ & Monte Carlo $\mathcal{O}(\log^2(n + m))$ & Monte Carlo $\mathcal{O}(\log^2(n + m))$ \\
             \hline
             Parsingi & deterministyczna $\mathcal{O}(1)$ & oczekiwana $\mathcal{O}(\log(n + m))$ & oczekiwana $\mathcal{O}(\log(n + m))$ \\
             \hline
@@ -119,7 +130,12 @@
 
 \begin{frame}[fragile]{O implementacji}
     \begin{block}{Struktura kodu}
-        Kod został podzielony na foldery, dzięki czemu można łatwo nawigować po projekcie. Implementacja każdej klasy znajduje się w osobnym pliku. Aby wiernie odwzorować problem z zadania, zaimplementowane struktury danych dziedziczą z abstrakcyjnej klasy \texttt{solution.h}.
+        Kod został podzielony na trzy główne części: \pause
+        \begin{itemize}
+            \item pliki \texttt{run.cpp} i \texttt{makefile} \pause
+            \item folder \texttt{solutions/} \pause
+            \item folder \texttt{testers/}
+        \end{itemize}
     \end{block}
     \pause
     \lstset{language=C++,
@@ -147,7 +163,7 @@ class solution {
 };
         \end{lstlisting}
     \end{lrbox}
-    \begin{block}{Implementacja \texttt{solution.h}}
+    \begin{block}{Interfejs abstrakcyjnej klasy \texttt{solution.h}}
     \begin{center}
         \vskip 2mm
         \scalebox{0.6}{\usebox{\thirdbox}}
@@ -156,11 +172,19 @@ class solution {
 \end{frame}
 
 \begin{frame}{Drzewce}
-    \begin{block}{Pomysł}
-        Każde drzewo zbalansowane reprezentuje jedno słowo ze słownika. Używamy drzew zbalansowanych, które można łączyć i dzielić w czasie logarytmicznym. W każdym wierzchołku trzymamy hasz całego poddrzewa. Równość dwóch słów sprawdzamy porównując hasze, a \texttt{lcp} i porównanie leksykograficzne poprzez wyszukiwanie binarne po wyniku wraz w każdorazowym rozcinaniem drzewa.
-    \end{block}
+    \begin{alertblock}{}
+        Każde drzewo zbalansowane reprezentuje jedno słowo ze słownika. 
+    \end{alertblock}
     \pause
-    \begin{block}{O drzewcach}
+    Używamy drzew zbalansowanych, tak aby można było: \pause
+    \begin{itemize}
+        \item łączyć dwa drzewa i dzielić jedno w czasie logarytmicznym, \pause
+        \item w każdym wierzchołku trzymać hasz całego jego poddrzewa, \pause
+        \item porównywać hasze wybranych wierzchołków dla sprawdzenia $=$, \pause
+        \item wyszukiwać binarnie po wyniku, aby wyliczać \texttt{lcp} i $<_{\text{lex}}$.
+    \end{itemize}
+    \pause
+    \begin{block}{Rotacje}
         Implementacja drzewców nie wymaga implementacji rotacji drzewa. Drzewo musi zachowywać porządek kopcowy patrząc na priorytety, a porządek BST patrząc na klucze. W ten sposób zawsze powstaje \textbf{dokładnie} jeden drzewiec.
     \end{block}
     \pause
@@ -241,17 +265,42 @@ balanced_trees::treap *balanced_trees::merge(balanced_trees::treap *t1,
         \end{lstlisting}
     \end{lrbox}
     \begin{center}
+        \vskip 2mm
         \scalebox{0.6}{\usebox{\fifthbox}}
     \end{center}
+    \begin{alertblock}{Fakty o drzewcach} \pause
+        \begin{itemize}
+            \item mają wysokość logarytmiczną w.h.p. \pause
+            \item porównywanie podsłów również jest w.h.p. (hasze Karpa-Rabina)
+        \end{itemize}
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}{Drzewa symboli (\textit{parse trees})}
+    \begin{alertblock}{}
+        Utrzymujemy dynamiczną gramatykę bezkontekstową bez symbolu startowego.
+    \end{alertblock}
+    \pause
+    \begin{block}{}
+        Każdy symbol generuje \textbf{dokładnie jedno słowo}.
+    \end{block}
+    \pause
+    \begin{block}{}
+        Każdy symbol ma przypisany poziom, na którym występuje. Symbole powstają podczas tworzenia \textit{drzewa symbolu} nad nowym słowem.
+    \end{block}
+    \pause
+    \begin{block}{Tworzenie drzewa symbolu}
+        Polega na naprzemiennym wykonywaniu kompresji typu: \pause
+        \begin{itemize}
+            \item RLE (\textit{run-length encoding}), \pause
+            \item SHRINK, która zależy od losowych bitów symboli.
+        \end{itemize}
+    \end{block}
 \end{frame}
 
 \newsavebox{\eighthbox}
 
-\begin{frame}[fragile]{Drzewa symboli (\textit{parse trees})}
-    \begin{block}{Gramatyka bezkontekstowa}
-        Tworzymy gramatykę bezkontekstową, ale bez pojedynczego symbolu startowego. Utrzymujemy natomiast, że każdy symbol generuje \textbf{dokładnie jedno słowo}. Każdy symbol ma przypisany poziom, na którym występuje. Symbole powstają podczas tworzenia \textit{drzewa symbolu} nad nowym słowem.
-    \end{block}
-    \pause
+\begin{frame}[fragile]{Przykładowe drzewo symbolu}
     \begin{lrbox}{\eighthbox}
         \begin{forest}
             [$O$,
@@ -304,18 +353,9 @@ balanced_trees::treap *balanced_trees::merge(balanced_trees::treap *t1,
             ]
         \end{forest}
     \end{lrbox}
-    \begin{block}{Tworzenie drzewa symbolu}
-        \begin{columns}
-            \begin{column}{0.58\textwidth}
-                Polega na naprzemiennym wykonywaniu kompresji typu RLE (\textit{run-length encoding}) oraz SHRINK, która zależy od losowych bitów symboli.
-            \end{column}
-                \begin{column}{0.38\textwidth}
-                \begin{center}
-                    \scalebox{0.3}{\usebox{\eighthbox}}
-                \end{center}
-            \end{column}
-        \end{columns}
-    \end{block}
+    \begin{center}
+        \scalebox{0.7}{\usebox{\eighthbox}}
+    \end{center}
 \end{frame}
 
 \begin{frame}{Twierdzenie o oczekiwanym czasie budowy drzewa symbolu}
@@ -327,25 +367,98 @@ balanced_trees::treap *balanced_trees::merge(balanced_trees::treap *t1,
         Po zastosowaniu kompresji typu RLE, a~następnie kompresji typu SHRINK na~dowolnym słowie $w$, oczekiwana długość słowa $w^\prime$ powstałego w~wyniku kompresji jest nie większa niż $\frac{3}{4}|w| + \frac{1}{4}$.
     \end{block}
     \pause
-    \begin{block}{Szkic dowodu}
+    \begin{block}{Szkic dowodu} \pause
         \begin{itemize}
-            \item indukcja względem długości słowa,
+            \item indukcja względem długości słowa, \pause
             \item wykorzystanie powyższego faktu wraz z nierównością Markowa, aby oszacować prawdopodobieństwo, że długość słowa po dwóch kolejnych fazach kompresji skróci się przez stały czynnik.
         \end{itemize}
     \end{block}
 \end{frame}
 
-\newsavebox{\ninethbox}
-
-\begin{frame}[fragile]{Dekompozycja context-insensitive}
-    \begin{block}{Motywacja}
-        Nie możemy w prosty sposób (podobnie jak w drzewach zbalansowanych) łączyć dwóch drzew symboli. Okazuje się jednak, że możemy zawsze znaleźć pewną \textit{warstwę} drzewa symbolu, której RLE jest długości logarytmicznej i jest ona typu context-insensitive.
+\begin{frame}{Dekompozycja context-insensitive}
+    \begin{alertblock}{Motywacja}
+        Nie możemy w prosty sposób (podobnie jak w drzewach zbalansowanych) łączyć dwóch drzew symboli. 
+    \end{alertblock}
+    \pause
+    Okazuje się jednak, że możemy zawsze znaleźć pewną \textit{warstwę} drzewa symbolu, której RLE jest długości logarytmicznej i jest ona typu context-insensitive.
+    \pause
+    \begin{block}{Łączenie słów} \pause
+        \begin{enumerate}
+            \item Szukamy dekompozycji obu słów, a następnie je łączymy. \pause
+            \item Lista ta będzie dekompozycją konkatenacji początkowych dwóch słów. \pause
+            \item Budujemy górną część drzewa symbolu, jak przy budowaniu od liści.
+        \end{enumerate}
     \end{block}
     \pause
-    % \begin{block}{Łączenie i dzielenie słów}
-    %     Możemy wobec tego przy łączeniu znaleźć dekompozycje obu słów, a następnie je połączyć. Powstała lista jest dekompozycją konkatenacji początkowych dwóch słów. Następnie dobudowujemy górną część drzewa symbolu, podobnie jak przy budowaniu od liści. Dzielenie polega na wybraniu dekompozycji typu context-insensitive wybranego podsłowa i zbudowaniu nad nią drzewa symbolu.
-    % \end{block}
+    \begin{block}{}
+        Dzielenie polega na wybraniu dekompozycji typu context-insensitive wybranego podsłowa i zbudowaniu nad nią drzewa symbolu.
+    \end{block}
+\end{frame}
+
+\newsavebox{\ninethbox}
+
+\begin{frame}[fragile]{Przykład dekompozycji}
     \begin{lrbox}{\ninethbox}
+        \begin{forest}
+            [$O$,
+                [$M$,
+                    [$K$,
+                        [$H$,
+                            [$E$,
+                                [$A$,
+                                    [$a$]
+                                    [$a$]
+                                ]
+                                [$B$,
+                                    [$b$]
+                                    [$b$]
+                                ]
+                            ]
+                            [$E$,
+                                [$A$,
+                                    [$a$]
+                                    [$a$]
+                                ]
+                                [$B$,
+                                    [$b$]
+                                    [$b$]
+                                ]
+                            ]
+                        ]
+                    ] 
+                ]
+                [$N$,
+                    [$L$,
+                        [$I$,
+                            [$F$,
+                                [$C$,
+                                    [$c$]
+                                    [$c$]
+                                    [$c$]
+                                ]
+                            ]
+                        ]
+                        [$J$,
+                            [$G$,
+                                [$D$,
+                                    [$d$]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        \end{forest}
+    \end{lrbox}
+    \begin{center}
+        \scalebox{0.7}{\usebox{\ninethbox}}
+    \end{center}
+\end{frame}
+
+\newsavebox{\extrabox}
+
+\begin{frame}[fragile]{Przykład dekompozycji}
+    \begin{lrbox}{\extrabox}
         \begin{forest}
             [$O$,
                 [$M$,
@@ -397,21 +510,30 @@ balanced_trees::treap *balanced_trees::merge(balanced_trees::treap *t1,
             ]
         \end{forest}
     \end{lrbox}
-    \begin{block}{Łączenie i dzielenie słów}
-    \begin{columns}
-        \begin{column}{0.58\textwidth}
-            \small Możemy wobec tego przy łączeniu znaleźć dekompozycje obu słów, a następnie je połączyć. Powstała lista jest dekompozycją konkatenacji początkowych dwóch słów. Następnie dobudowujemy górną część drzewa symbolu, podobnie jak przy budowaniu od liści. Dzielenie polega na wybraniu dekompozycji typu context-insensitive wybranego podsłowa i zbudowaniu nad nią drzewa symbolu.
-        \end{column}
-            \begin{column}{0.38\textwidth}
-            \begin{center}
-                \scalebox{0.3}{\usebox{\ninethbox}}
-            \end{center}
-        \end{column}
-    \end{columns}
-    \end{block}
+    \begin{center}
+        \scalebox{0.7}{\usebox{\extrabox}}
+    \end{center}
 \end{frame}
 
 \newsavebox{\fourthbox}
+
+\begin{frame}{Różnice w implementacji względem oryginalnej pracy}
+    \begin{alertblock}{}
+        Ze względu na zaawansowanie struktury opisanej w pracy, przyjmujemy pewne uproszczenia.
+    \end{alertblock}
+    \pause
+    Główne różnice w implementacji względem oryginalnej pracy:
+    \begin{itemize}
+        \item przy budowie drzewa \textbf{dopuszczamy} jednoelementowe produkcje, \pause
+        \item użycie \texttt{std::unordered\_map}, która działa w oczekiwanym czasie stałym, \pause
+        \item nie zaimplementowano najlepszej metody dla zapytania  \texttt{lcp} i $<_{\text{lex}}$, \pause
+        \item większość operacji traci złożoność w.h.p. na rzecz oczekiwanej.
+    \end{itemize}
+    \pause
+    \begin{block}{Wysokość drzewa}
+        Faktem pozostaje natomiast logarytmiczna wysokość drzewa w.h.p.
+    \end{block}
+\end{frame}
 
 \begin{frame}[fragile]{Przykładowe uruchomienie}
     \begin{example}
@@ -467,6 +589,7 @@ PASSED 5147611 OUT OF 5147611 TESTS (100%)
 
 \begin{frame}
     \centering
+    \large
     Dziękuję za uwagę.
 \end{frame}
 
