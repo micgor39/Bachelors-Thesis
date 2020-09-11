@@ -25,7 +25,7 @@
 \usetheme{Boadilla}
 \beamertemplatenavigationsymbolsempty
 
-\title[Obrona pracy licencjackiej]{Implementacja wydajnych struktur danych\\ do~praktycznych operacji na~słowach}
+\title[Prezentacja pracy licencjackiej]{Implementacja wydajnych struktur danych\\ do~praktycznych operacji na~słowach}
 \subtitle{(Implementation of efficient data structures\\ for practical string operations)}
 \author{Michał Górniak}
 \institute[II UWr]{Instytut Informatyki Uniwersytetu Wrocławskiego}
@@ -163,12 +163,11 @@ class solution {
 };
         \end{lstlisting}
     \end{lrbox}
-    \begin{block}{Interfejs abstrakcyjnej klasy \texttt{solution.h}}
+    Interfejs abstrakcyjnej klasy \texttt{solution.h}:
     \begin{center}
         \vskip 2mm
         \scalebox{0.6}{\usebox{\thirdbox}}
     \end{center}
-    \end{block}
 \end{frame}
 
 \begin{frame}{Drzewce}
@@ -526,6 +525,7 @@ balanced_trees::treap *balanced_trees::merge(balanced_trees::treap *t1,
     \begin{itemize}
         \item przy budowie drzewa \textbf{dopuszczamy} jednoelementowe produkcje, \pause
         \item użycie \texttt{std::unordered\_map}, która działa w oczekiwanym czasie stałym, \pause
+        \item \texttt{concat} działa w złożoności oczekiwanej logarytmicznej, \pause
         \item nie zaimplementowano najlepszej metody dla zapytania  \texttt{lcp} i $<_{\text{lex}}$, \pause
         \item większość operacji traci złożoność w.h.p. na rzecz oczekiwanej.
     \end{itemize}
@@ -589,7 +589,7 @@ PASSED 5147611 OUT OF 5147611 TESTS (100%)
 
 \begin{frame}
     \centering
-    \large
+    \LARGE
     Dziękuję za uwagę.
 \end{frame}
 
